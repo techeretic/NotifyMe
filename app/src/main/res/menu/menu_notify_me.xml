@@ -1,0 +1,11 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:notifyme="http://schemas.android.com/apk/res-auto"
+    tools:context=".NotifyMe">
+    <item
+        android:id="@+id/notify_me"
+        android:title="@string/notify_btn_label"
+        android:icon="@android:drawable/ic_menu_set_as"
+        android:orderInCategory="100"
+        notifyme:showAsAction="collapseActionView|always" />
+</menu>
