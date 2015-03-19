@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Notify Me</string>
+    <string name="app_name">Notify</string>
 
     <string name="hello_world">Hello world!</string>
     <string name="what_notify_label">What do you want to be notified about?</string>
@@ -12,4 +12,8 @@
     <string name="ok_label">Ok</string>
     <string name="cancel_label">Cancel</string>
     <string name="notify_btn_label">Notify Me</string>
+    <string name="title_activity_notifier">Notifier</string>
+    <string name="title_activity_notification_detail">NotificationDetail</string>
+    <string name="title_hint">Title</string>
+    <string name="note_hint">Text</string>
 </resources>

@@ -9,13 +9,28 @@
         android:theme="@style/AppTheme" >
         <activity
             android:name=".NotifyMe"
-            android:windowSoftInputMode="stateVisible"
-            android:label="@string/app_name" >
+            android:label="@string/app_name"
+            android:windowSoftInputMode="stateVisible" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity>
+
+        <receiver
+            android:name=".RecieveAndNotify"
+            android:enabled="true"
+            android:exported="true" >
+        </receiver>
+
+        <activity
+            android:name=".NotificationDetail"
+            android:label="@string/title_activity_notification_detail"
+            android:parentActivityName=".NotifyMe" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="shetye.prathamesh.notifyme.NotifyMe" />
         </activity>
     </application>
 
