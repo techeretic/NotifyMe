@@ -1,10 +1,19 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
-    android:layout_height="match_parent" android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
-    android:paddingBottom="@dimen/activity_vertical_margin"
-    tools:context="shetye.prathamesh.notifyme.NotificationDetail">
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:elevation="5dp"
+    android:layout_marginTop="2dp"
+    android:layout_marginBottom="2dp"
+    android:layout_marginStart="2dp"
+    android:layout_marginEnd="2dp"
+    android:clickable="true"
+    android:focusable="true"
+    android:padding="5dp"
+    android:background="@drawable/recviewbackground" >
+
     <TextView
         android:id="@+id/notify_title_txt"
         android:layout_width="match_parent"
@@ -24,7 +33,17 @@
         android:layout_alignParentStart="true"
         android:layout_alignParentEnd="true"
         android:layout_marginTop="5dp"
+        android:maxLines="5"
+        android:ellipsize="end"
         android:textAppearance="@style/TextAppearance.AppCompat.Medium"/>
+
+    <View
+        android:id="@+id/temp_view"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:orientation="vertical"
+        android:layout_below="@+id/notify_txt"
+        android:background="@android:color/darker_gray" />
 
     <TextView
         android:layout_width="match_parent"
@@ -32,20 +51,11 @@
         android:isScrollContainer="true"
         android:id="@+id/when_to_notify"
         android:textAlignment="center"
-        android:layout_below="@+id/notify_txt"
+        android:layout_below="@+id/temp_view"
         android:layout_alignParentStart="true"
         android:layout_alignParentEnd="true"
         android:layout_marginTop="5dp"
         android:gravity="bottom|end"
         android:layout_gravity="bottom|end"
         android:textAppearance="@style/TextAppearance.AppCompat.Small" />
-
-    <Button
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/ok_label"
-        android:layout_marginTop="10dp"
-        android:id="@+id/done_button"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentBottom="true" />
 </RelativeLayout>

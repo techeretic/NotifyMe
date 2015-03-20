@@ -1,5 +1,5 @@
 
-package shetye.prathamesh.notifyme.shetye.prathamesh.notifyme.ui;
+package shetye.prathamesh.notifyme.ui;
 
 import android.content.Context;
 import android.view.View;

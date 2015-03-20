@@ -1,4 +1,4 @@
-package shetye.prathamesh.notifyme.shetye.prathamesh.notifyme.ui;
+package shetye.prathamesh.notifyme.ui;
 
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
