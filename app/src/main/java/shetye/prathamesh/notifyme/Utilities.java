@@ -19,9 +19,15 @@ import android.widget.DatePicker;
 import android.widget.TimePicker;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.List;
+
+import io.realm.Realm;
+import shetye.prathamesh.notifyme.shetye.prathamesh.notifyme.realm.Notif;
+import shetye.prathamesh.notifyme.shetye.prathamesh.notifyme.shetye.prathamesh.notifyme.receiver.RecieveAndNotify;
 
 /**
  * Created by p.shetye on 3/19/15.
@@ -41,12 +47,40 @@ public class Utilities {
     private int mSelectedHours;
     private int mSelectedMinutes;
     private boolean mPastDateSelected;
+    private Realm myNotifications;
 
     public static Utilities getInstance() {
         if (instance == null) {
             instance = new Utilities();
         }
         return instance;
+    }
+
+    public Realm getMyNotifications() {
+        return myNotifications;
+    }
+
+    public void initializeRealm(Context context) {
+        if (myNotifications == null) {
+            myNotifications = Realm.getInstance(context);
+        }
+    }
+
+    public List<Notif> getMyNotifs() {
+        if (myNotifications == null) {
+            return null;
+        }
+        List<Notif> result = myNotifications.where(Notif.class).findAllSorted("complete");
+        return result;
+    }
+
+    public void saveNotiication(Notif n) {
+        myNotifications.beginTransaction();
+
+        Notif notif = myNotifications.createObject(Notif.class);
+        notif = n;
+
+        myNotifications.commitTransaction();
     }
 
     public void createZoneOutDialog(final Context context, final Activity parentActivity,
