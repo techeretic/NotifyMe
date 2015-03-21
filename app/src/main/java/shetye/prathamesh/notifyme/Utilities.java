@@ -324,12 +324,17 @@ public class Utilities {
         );
 
         NotificationCompat.InboxStyle inboxStyle = new NotificationCompat.InboxStyle();
-        inboxStyle.setBigContentTitle(title);
+        String newTitle;
+        if (title == null || title.isEmpty())
+            newTitle = context.getResources().getString(R.string.app_name);
+        else
+            newTitle = title;
+        inboxStyle.setBigContentTitle(newTitle);
         inboxStyle.addLine(message);
         NotificationCompat.Builder mBuilder =
                 new NotificationCompat.Builder(context)
                         .setSmallIcon(R.drawable.ic_dashboard_light)
-                        .setContentTitle(title)
+                        .setContentTitle(newTitle)
                         .setContentText(message)
                         .setPriority(NotificationCompat.PRIORITY_MAX)
                         .setContentIntent(resultPendingIntent)
