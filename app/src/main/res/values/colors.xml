@@ -3,4 +3,7 @@
     <color name="accent_red">#ffe04448</color>
     <color name="primary_dark_red">#9D0D0D</color>
     <color name="primary_red">#BD1D1A</color>
+
+    <color name="pending_notif">#ff30a3bd</color>
+    <color name="completed_notif">#ff78bd38</color>
 </resources>

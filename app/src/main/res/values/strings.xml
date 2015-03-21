@@ -17,4 +17,5 @@
     <string name="title_hint">Title</string>
     <string name="note_hint">Text</string>
     <string name="title_activity_notifications">Notifications</string>
+    <string name="title_activity_base">BaseActivity</string>
 </resources>

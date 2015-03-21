@@ -89,6 +89,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public void addNotif(Notif note) {
         SQLiteDatabase db = this.getWritableDatabase();
 
+        if(ifExists(note.get_id())) {
+            updateNote(note);
+            return;
+        }
+
         ContentValues values = new ContentValues();
         values.put(KEY_CONTENT, note.getNotification_content()); // Note
         values.put(KEY_TITLE, note.getNotification_title()); // Title
@@ -212,6 +217,18 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         Cursor cursor = db.rawQuery(selectQuery, null);
 
         return cursor.getCount() + 1;
+    }
+
+    public boolean ifExists(int ID) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String selectQuery = "SELECT * FROM " + MYNOTIF + " WHERE " + KEY_ID + " = " + Integer.toString(ID);
+
+        Cursor cursor = db.rawQuery(selectQuery, null);
+
+        if (cursor.getCount() > 0)
+            return true;
+        else
+            return false;
     }
 
     public int markComplete(int ID) {

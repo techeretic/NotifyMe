@@ -1,7 +1,5 @@
 package shetye.prathamesh.notifyme.database;
 
-import io.realm.RealmObject;
-
 /**
  * Created by prathamesh on 3/19/15.
  */

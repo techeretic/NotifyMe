@@ -3,14 +3,9 @@
     android:layout_height="match_parent"
     tools:context="shetye.prathamesh.notifyme.Notifications">
 
-    <android.support.v7.widget.Toolbar
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
+    <include
         android:id="@+id/my_awesome_toolbar"
-        android:layout_height="wrap_content"
-        android:layout_width="match_parent"
-        android:background="@color/primary_red"
-        app:theme="@style/ToolbarTheme" />
+        layout="@layout/activity_base"/>
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/recycleNotificions"

@@ -25,9 +25,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
-import java.util.List;
 
-import io.realm.Realm;
 import shetye.prathamesh.notifyme.database.DatabaseHelper;
 import shetye.prathamesh.notifyme.database.Notif;
 import shetye.prathamesh.notifyme.receiver.RecieveAndNotify;
@@ -53,7 +51,6 @@ public class Utilities {
     private int mSelectedHours;
     private int mSelectedMinutes;
     private boolean mPastDateSelected;
-    private Realm myNotifications;
 
     public static Utilities getInstance() {
         if (instance == null) {
@@ -153,6 +150,100 @@ public class Utilities {
                         updateBtnText(selectedTime, false);
                     }
                 }, mSelectedYear, mSelectedMonth, mSelectedDay);
+                datePickerDialog.show();
+            }
+        });
+        mDialog.show();
+    }
+
+    public void createWhenDialog(final Context context, final Activity parentActivity, final Notif note, boolean back) {
+        mDialog = new Dialog(context);
+        mDialog.setContentView(R.layout.datetimepicker_dialog);
+        mDialog.setTitle("When to Notify??");
+        mDialogOKBtn = (Button) mDialog.findViewById(R.id.btn_ok);
+        final String noteContent = note.getNotification_content();
+        final String noteTitle = note.getNotification_title();
+        final int id = note.get_id();
+        mDialogOKBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //Actually Hibernate the apps
+                Notif newNote = note;
+                newNote.setNotification_when(getSelectedTime());
+                DatabaseHelper.getInstance(context).addNotif(newNote);
+                setZoneInTimer(context, id, noteTitle, noteContent, getSelectedTime());
+                mDialog.dismiss();
+                if (parentActivity != null) {
+                    parentActivity.finish();
+                }
+            }
+        });
+        mDialogOKBtn.setEnabled(false);
+        mDialogCancelBtn = (Button) mDialog.findViewById(R.id.btn_cancel);
+        mDialogCancelBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mDialog.dismiss();
+                if (parentActivity != null) {
+                    parentActivity.finish();
+                }
+            }
+        });
+        mTimeBtn = (Button) mDialog.findViewById(R.id.btntimeset);
+        mDateBtn = (Button) mDialog.findViewById(R.id.btndateset);
+        final Time dtNow = new Time();
+        dtNow.setToNow();
+        mSelectedHours = dtNow.hour;
+        mSelectedMinutes = dtNow.minute;
+        mSelectedYear = dtNow.year;
+        mSelectedMonth = dtNow.month;
+        mSelectedDay = dtNow.monthDay;
+        updateBtnText(dtNow, false);
+        Time selectedTime = new Time();
+        selectedTime.set(0, mSelectedMinutes, mSelectedHours, mSelectedDay, mSelectedMonth, mSelectedYear);
+        mPastDateSelected = true;
+        mTimeBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                TimePickerDialog timePickerDialog = new TimePickerDialog(context, new TimePickerDialog.OnTimeSetListener() {
+                    @Override
+                    public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+                        Time selectedTime = new Time();
+                        mSelectedHours = hourOfDay;
+                        mSelectedMinutes = minute;
+                        selectedTime.set(0, mSelectedMinutes, mSelectedHours, mSelectedDay, mSelectedMonth, mSelectedYear);
+                        if (Time.compare(selectedTime, dtNow) <= 0) {
+                            mPastDateSelected = true;
+                        } else {
+                            mPastDateSelected = false;
+                        }
+                        updateBtnText(selectedTime, true);
+                    }
+                }, mSelectedHours, mSelectedMinutes, false);
+                timePickerDialog.show();
+            }
+        });
+        mDateBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                DatePickerDialog datePickerDialog = new DatePickerDialog(context,
+                        new DatePickerDialog.OnDateSetListener() {
+                            @Override
+                            public void onDateSet(DatePicker view, int yy, int mm, int dd) {
+                                Time selectedTime = new Time();
+                                mSelectedYear = yy;
+                                mSelectedMonth = mm;
+                                mSelectedDay = dd;
+                                selectedTime.set(0, mSelectedMinutes, mSelectedHours,
+                                        mSelectedDay, mSelectedMonth, mSelectedYear);
+                                if (Time.compare(selectedTime, dtNow) <= 0) {
+                                    mPastDateSelected = true;
+                                } else {
+                                    mPastDateSelected = false;
+                                }
+                                updateBtnText(selectedTime, false);
+                            }
+                        }, mSelectedYear, mSelectedMonth, mSelectedDay);
                 datePickerDialog.show();
             }
         });

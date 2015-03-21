@@ -7,6 +7,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import org.w3c.dom.Text;
+
 import java.util.List;
 
 import shetye.prathamesh.notifyme.R;
@@ -42,6 +44,13 @@ public class MyNotifRecAdapter extends
         viewHolder.notifDate.setText(Utilities.getInstance().getDateFromMS(
             mNotifs.get(position).getNotification_when()
         ));
+        if (mNotifs.get(position).getNotification_when() <= System.currentTimeMillis()) {
+            viewHolder.notifStatus.setText("Completed");
+            viewHolder.notifStatus.setBackgroundColor(mContext.getResources().getColor(R.color.completed_notif));
+        } else {
+            viewHolder.notifStatus.setText("Pending");
+            viewHolder.notifStatus.setBackgroundColor(mContext.getResources().getColor(R.color.pending_notif));
+        }
     }
 
     @Override
@@ -54,12 +63,14 @@ public class MyNotifRecAdapter extends
         public TextView notifTitle;
         public TextView notifText;
         public TextView notifDate;
+        public TextView notifStatus;
 
         public ViewHolder(View view) {
             super(view);
             notifTitle = (TextView) view.findViewById(R.id.notify_title_txt);
             notifText = (TextView) view.findViewById(R.id.notify_txt);
             notifDate = (TextView) view.findViewById(R.id.when_to_notify);
+            notifStatus = (TextView) view.findViewById(R.id.notif_status);
         }
     }
 }
