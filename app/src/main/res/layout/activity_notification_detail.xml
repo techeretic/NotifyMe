@@ -1,34 +1,25 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="shetye.prathamesh.notifyme.NotificationDetail">
+    android:id="@+id/detail_view" >
 
     <include
         android:id="@+id/my_awesome_toolbar"
         layout="@layout/activity_base"/>
-    <View
-        android:id="@+id/temp_view"
-        android:layout_width="match_parent"
-        android:layout_height="2dp"
-        android:orientation="vertical"
-        android:layout_below="@id/my_awesome_toolbar" />
+
     <LinearLayout
         android:id="@+id/layout_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:layout_below="@id/temp_view" >
-
+        android:layout_below="@id/my_awesome_toolbar" >
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:isScrollContainer="true"
             android:id="@+id/when_to_notify"
+            android:transitionName="when_to_notify"
             android:textAlignment="center"
-            android:layout_below="@+id/notify_txt"
-            android:layout_alignParentStart="true"
-            android:layout_alignParentEnd="true"
             android:layout_marginTop="5dp"
             android:layout_marginStart="5dp"
             android:layout_marginEnd="5dp"
@@ -36,27 +27,37 @@
             android:gravity="bottom|end"
             android:layout_gravity="bottom|end"
             android:textAppearance="@style/TextAppearance.AppCompat.Small" />
+        <View
+            android:id="@+id/line_view"
+            android:transitionName="line_view"
+            android:layout_width="match_parent"
+            android:layout_height="2dp"
+            android:orientation="vertical"
+            android:background="@android:color/darker_gray" />
 
         <TextView
             android:id="@+id/notify_title_txt"
+            android:transitionName="notify_title_txt"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="top|start"
             android:isScrollContainer="true"
             android:maxLines="5"
-            android:padding="10dp"
+            android:padding="20dp"
             android:ellipsize="end"
-            android:layout_below="@+id/my_awesome_toolbar"
             android:textAppearance="@style/TextAppearance.AppCompat.Title" />
 
         <TextView
             android:id="@+id/notify_txt"
+            android:transitionName="notify_txt"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="10dp"
             android:layout_marginEnd="10dp"
             android:layout_marginTop="15dp"
             android:layout_marginBottom="15dp"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
             android:clickable="true"
             android:gravity="top|start"
             android:isScrollContainer="true"

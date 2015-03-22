@@ -1,9 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="accent_red">#ffe04448</color>
+    <color name="accent_red">#ffe06466</color>
     <color name="primary_dark_red">#9D0D0D</color>
     <color name="primary_red">#BD1D1A</color>
 
-    <color name="pending_notif">#ff30a3bd</color>
-    <color name="completed_notif">#ff78bd38</color>
+    <color name="pending_notif">#303F9F</color>
+    <color name="completed_notif">#FF4081</color>
+
+    <color name="notif_item_bckg">#fffff7fa</color>
+
+
+    <color name="primary">#3F51B5</color>
+    <color name="primary_dark">#303F9F</color>
+    <color name="primary_light">#C5CAE9</color>
+    <color name="accent">#FF4081</color>
+    <color name="primary_text">#212121</color>
+    <color name="secondary_text">#727272</color>
+    <color name="icons">#FFFFFF</color>
+    <color name="divider">#B6B6B6</color>
 </resources>

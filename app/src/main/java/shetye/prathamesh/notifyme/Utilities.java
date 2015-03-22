@@ -15,6 +15,7 @@ import android.media.RingtoneManager;
 import android.net.Uri;
 import android.support.v4.app.NotificationCompat;
 import android.text.format.Time;
+import android.util.TypedValue;
 import android.view.View;
 import android.widget.Button;
 import android.widget.DatePicker;
@@ -37,7 +38,10 @@ public class Utilities {
     public static final String NOTIF_EXTRA_KEY = "NOTIF_MESSAGE";
     public static final String NOTIF_EXTRA_ID_KEY = "NOTIF_ID";
     public static final String NOTIF_EXTRA_TITLE_KEY = "NOTIF_TITLE";
+    public static final String NOTIF_EXTRA_DONE_LATER_KEY = "NOTIF_DONE_OR_LATER";
     public static final String NOTIF_SERVICE_ACTION = "shetye.prathamesh.GENERATE_NOTIFICATION";
+    public static final String NOTIF_SERVICE_DONE_ACTION = "shetye.prathamesh.DONE_NOTIFICATION";
+    public static final int UPDATED = 7;
     private static Utilities instance;
     private Dialog mDialog;
     private Dialog mNewNotifDialog;
@@ -59,8 +63,8 @@ public class Utilities {
         return instance;
     }
 
-    public void createWhenDialog(final Context context, final Activity parentActivity, final Notif note) {
-        mDialog = new Dialog(context);
+    public void createWhenDialog(final Context context, final Activity parentActivity, final Notif note, final boolean back) {
+        mDialog = new Dialog(context, R.style.DialogTheme);
         mDialog.setContentView(R.layout.datetimepicker_dialog);
         mDialog.setTitle("When to Notify??");
         mDialogOKBtn = (Button) mDialog.findViewById(R.id.btn_ok);
@@ -70,17 +74,17 @@ public class Utilities {
         mDialogOKBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //Actually Hibernate the apps
                 Notif newNote = note;
                 newNote.setNotification_when(getSelectedTime());
                 DatabaseHelper.getInstance(context).addNotif(newNote);
                 setZoneInTimer(context, id, noteTitle, noteContent, getSelectedTime());
                 mDialog.dismiss();
-                /*if (parentActivity != null) {
-                    parentActivity.finish();
-                }*/
                 if (parentActivity != null) {
-                    ((Notifications) parentActivity).refreshNotifications();
+                    if (back) {
+                        parentActivity.finishAfterTransition();
+                    } else {
+                        ((Notifications) parentActivity).refreshNotifications();
+                    }
                 }
             }
         });
@@ -91,7 +95,7 @@ public class Utilities {
             public void onClick(View v) {
                 mDialog.dismiss();
                 if (parentActivity != null) {
-                    parentActivity.finish();
+                    parentActivity.finishAfterTransition();
                 }
             }
         });
@@ -111,7 +115,7 @@ public class Utilities {
         mTimeBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                TimePickerDialog timePickerDialog = new TimePickerDialog(context, new TimePickerDialog.OnTimeSetListener() {
+                TimePickerDialog timePickerDialog = new TimePickerDialog(context, R.style.DialogTheme, new TimePickerDialog.OnTimeSetListener() {
                     @Override
                     public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
                         Time selectedTime = new Time();
@@ -132,101 +136,7 @@ public class Utilities {
         mDateBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                DatePickerDialog datePickerDialog = new DatePickerDialog(context,
-                    new DatePickerDialog.OnDateSetListener() {
-                    @Override
-                    public void onDateSet(DatePicker view, int yy, int mm, int dd) {
-                        Time selectedTime = new Time();
-                        mSelectedYear = yy;
-                        mSelectedMonth = mm;
-                        mSelectedDay = dd;
-                        selectedTime.set(0, mSelectedMinutes, mSelectedHours,
-                            mSelectedDay, mSelectedMonth, mSelectedYear);
-                        if (Time.compare(selectedTime, dtNow) <= 0) {
-                            mPastDateSelected = true;
-                        } else {
-                            mPastDateSelected = false;
-                        }
-                        updateBtnText(selectedTime, false);
-                    }
-                }, mSelectedYear, mSelectedMonth, mSelectedDay);
-                datePickerDialog.show();
-            }
-        });
-        mDialog.show();
-    }
-
-    public void createWhenDialog(final Context context, final Activity parentActivity, final Notif note, boolean back) {
-        mDialog = new Dialog(context);
-        mDialog.setContentView(R.layout.datetimepicker_dialog);
-        mDialog.setTitle("When to Notify??");
-        mDialogOKBtn = (Button) mDialog.findViewById(R.id.btn_ok);
-        final String noteContent = note.getNotification_content();
-        final String noteTitle = note.getNotification_title();
-        final int id = note.get_id();
-        mDialogOKBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                //Actually Hibernate the apps
-                Notif newNote = note;
-                newNote.setNotification_when(getSelectedTime());
-                DatabaseHelper.getInstance(context).addNotif(newNote);
-                setZoneInTimer(context, id, noteTitle, noteContent, getSelectedTime());
-                mDialog.dismiss();
-                if (parentActivity != null) {
-                    parentActivity.finish();
-                }
-            }
-        });
-        mDialogOKBtn.setEnabled(false);
-        mDialogCancelBtn = (Button) mDialog.findViewById(R.id.btn_cancel);
-        mDialogCancelBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mDialog.dismiss();
-                if (parentActivity != null) {
-                    parentActivity.finish();
-                }
-            }
-        });
-        mTimeBtn = (Button) mDialog.findViewById(R.id.btntimeset);
-        mDateBtn = (Button) mDialog.findViewById(R.id.btndateset);
-        final Time dtNow = new Time();
-        dtNow.setToNow();
-        mSelectedHours = dtNow.hour;
-        mSelectedMinutes = dtNow.minute;
-        mSelectedYear = dtNow.year;
-        mSelectedMonth = dtNow.month;
-        mSelectedDay = dtNow.monthDay;
-        updateBtnText(dtNow, false);
-        Time selectedTime = new Time();
-        selectedTime.set(0, mSelectedMinutes, mSelectedHours, mSelectedDay, mSelectedMonth, mSelectedYear);
-        mPastDateSelected = true;
-        mTimeBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                TimePickerDialog timePickerDialog = new TimePickerDialog(context, new TimePickerDialog.OnTimeSetListener() {
-                    @Override
-                    public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-                        Time selectedTime = new Time();
-                        mSelectedHours = hourOfDay;
-                        mSelectedMinutes = minute;
-                        selectedTime.set(0, mSelectedMinutes, mSelectedHours, mSelectedDay, mSelectedMonth, mSelectedYear);
-                        if (Time.compare(selectedTime, dtNow) <= 0) {
-                            mPastDateSelected = true;
-                        } else {
-                            mPastDateSelected = false;
-                        }
-                        updateBtnText(selectedTime, true);
-                    }
-                }, mSelectedHours, mSelectedMinutes, false);
-                timePickerDialog.show();
-            }
-        });
-        mDateBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                DatePickerDialog datePickerDialog = new DatePickerDialog(context,
+                DatePickerDialog datePickerDialog = new DatePickerDialog(context, R.style.DialogTheme,
                         new DatePickerDialog.OnDateSetListener() {
                             @Override
                             public void onDateSet(DatePicker view, int yy, int mm, int dd) {
@@ -304,6 +214,15 @@ public class Utilities {
         notificationIntent.putExtra(Utilities.NOTIF_EXTRA_ID_KEY, ID);
         notificationIntent.putExtra(Utilities.NOTIF_EXTRA_KEY,message);
         notificationIntent.putExtra(Utilities.NOTIF_EXTRA_TITLE_KEY,title);
+
+        Intent laterIntent = new Intent(context, NotifyMe.class);
+        laterIntent.putExtra(Utilities.NOTIF_EXTRA_ID_KEY, ID);
+        laterIntent.putExtra(Utilities.NOTIF_EXTRA_DONE_LATER_KEY,true);
+
+        Intent doneIntent = new Intent(context, RecieveAndNotify.class);
+        doneIntent.setAction(NOTIF_SERVICE_DONE_ACTION);
+        doneIntent.putExtra(Utilities.NOTIF_EXTRA_ID_KEY, ID);
+
         PendingIntent resultPendingIntent = PendingIntent.getActivity(
                 context,
                 0,
@@ -313,13 +232,13 @@ public class Utilities {
         PendingIntent remindLaterIntent = PendingIntent.getActivity(
                 context,
                 0,
-                notificationIntent,
+                laterIntent,
                 PendingIntent.FLAG_UPDATE_CURRENT
         );
-        PendingIntent completedIntent = PendingIntent.getActivity(
+        PendingIntent completedIntent = PendingIntent.getBroadcast(
                 context,
                 0,
-                notificationIntent,
+                doneIntent,
                 PendingIntent.FLAG_UPDATE_CURRENT
         );
 
@@ -358,7 +277,7 @@ public class Utilities {
     }
 
     public void createNewNotifDialog(final Context context, final Activity parentActivity) {
-        mNewNotifDialog = new Dialog(context);
+        mNewNotifDialog = new Dialog(context, R.style.DialogTheme);
         mNewNotifDialog.setContentView(R.layout.activity_notify_me);
         mNewNotifDialog.setTitle("What to Notify??");
 
@@ -379,7 +298,7 @@ public class Utilities {
                     false,
                     false
                 );
-                createWhenDialog(context, parentActivity, n);
+                createWhenDialog(context, parentActivity, n, false);
                 mNewNotifDialog.dismiss();
                 /*if (parentActivity != null) {
                     ((Notifications) parentActivity).refreshNotifications();
@@ -395,5 +314,11 @@ public class Utilities {
             .getSystemService(Context.NOTIFICATION_SERVICE);
         notificationManager.cancel(ID);
         DatabaseHelper.getInstance(context).markComplete(ID);
+    }
+
+    public int getStyleAttribute(Context context, int attribute_type) {
+        TypedValue outValue = new TypedValue();
+        context.getTheme().resolveAttribute( attribute_type, outValue, true );
+        return outValue.resourceId;
     }
 }

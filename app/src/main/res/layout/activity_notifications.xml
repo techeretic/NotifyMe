@@ -12,12 +12,12 @@
         android:scrollbars="vertical"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:horizontalSpacing="5dp"
-        android:verticalSpacing="5dp"
+        android:horizontalSpacing="15dp"
+        android:verticalSpacing="25dp"
         android:gravity="clip_vertical|clip_horizontal"
         android:padding="5dp"
         android:divider="@android:color/transparent"
-        android:dividerHeight="5.0sp"
+        android:dividerHeight="50.0sp"
         android:stretchMode="columnWidth"
         android:layout_below="@id/my_awesome_toolbar"/>
 

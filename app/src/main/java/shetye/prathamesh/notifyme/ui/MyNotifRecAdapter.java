@@ -41,16 +41,18 @@ public class MyNotifRecAdapter extends
     public void onBindViewHolder(ViewHolder viewHolder, int position) {
         viewHolder.notifTitle.setText(mNotifs.get(position).getNotification_title());
         viewHolder.notifText.setText(mNotifs.get(position).getNotification_content());
-        viewHolder.notifDate.setText(Utilities.getInstance().getDateFromMS(
-            mNotifs.get(position).getNotification_when()
-        ));
+        String statusText="";
         if (mNotifs.get(position).getNotification_when() <= System.currentTimeMillis()) {
-            viewHolder.notifStatus.setText("Completed");
-            viewHolder.notifStatus.setBackgroundColor(mContext.getResources().getColor(R.color.completed_notif));
+            statusText = "Notified at ";
+            viewHolder.lineView.setBackgroundColor(mContext.getResources().getColor(R.color.completed_notif));
         } else {
-            viewHolder.notifStatus.setText("Pending");
-            viewHolder.notifStatus.setBackgroundColor(mContext.getResources().getColor(R.color.pending_notif));
+            statusText = "Will Notify at ";
+            viewHolder.lineView.setBackgroundColor(mContext.getResources().getColor(R.color.pending_notif));
         }
+        viewHolder.notifDate.setText(statusText +
+                Utilities.getInstance().getDateFromMS(
+                mNotifs.get(position).getNotification_when()
+        ));
     }
 
     @Override
@@ -63,14 +65,14 @@ public class MyNotifRecAdapter extends
         public TextView notifTitle;
         public TextView notifText;
         public TextView notifDate;
-        public TextView notifStatus;
+        public View lineView;
 
         public ViewHolder(View view) {
             super(view);
             notifTitle = (TextView) view.findViewById(R.id.notify_title_txt);
             notifText = (TextView) view.findViewById(R.id.notify_txt);
             notifDate = (TextView) view.findViewById(R.id.when_to_notify);
-            notifStatus = (TextView) view.findViewById(R.id.notif_status);
+            lineView = view.findViewById(R.id.line_view);
         }
     }
 }

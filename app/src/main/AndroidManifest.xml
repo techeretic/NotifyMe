@@ -18,12 +18,16 @@
         </activity>
         <activity
             android:name=".NotifyMe"
-            android:label="@string/app_name" >
+            android:label="@string/app_name"
+            android:parentActivityName=".Notifications" >
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <data android:mimeType="text/plain" />
             </intent-filter>
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="shetye.prathamesh.notifyme.Notifications" />
         </activity>
 
         <receiver
@@ -39,10 +43,6 @@
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="shetye.prathamesh.notifyme.NotifyMe" />
-        </activity>
-        <activity
-            android:name=".ui.BaseActivity"
-            android:label="@string/title_activity_base" >
         </activity>
     </application>
 

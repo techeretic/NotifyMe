@@ -21,6 +21,7 @@ public class NotifyMe extends BaseActivity {
     TextView mNotifTitle;
     TextView mNotifText;
     TextView mNotifDate;
+    View mLineView;
     Context mContext;
     Notif mNote;
 
@@ -36,7 +37,21 @@ public class NotifyMe extends BaseActivity {
         mNotifTitle = (TextView) findViewById(R.id.notify_title_txt);
         mNotifText = (TextView) findViewById(R.id.notify_txt);
         mNotifDate = (TextView) findViewById(R.id.when_to_notify);
+        mLineView = findViewById(R.id.line_view);
 
+        if (intent.getBooleanExtra(Utilities.NOTIF_EXTRA_DONE_LATER_KEY, false)) {
+            int id = intent.getIntExtra(Utilities.NOTIF_EXTRA_ID_KEY, 0);
+            Utilities.getInstance().dismissNotification(mContext, id);
+            mNote = DatabaseHelper.getInstance(mContext).getNote(id);
+            if (mNote != null) {
+                mNotifTitle.setText(mNote.getNotification_title());
+                mNotifText.setText(mNote.getNotification_content());
+                mNotifDate.setText(Utilities.getInstance().getDateFromMS(
+                        mNote.getNotification_when()
+                ));
+            }
+            Utilities.getInstance().createWhenDialog(mContext, NotifyMe.this, mNote, true);
+        } else
         if (Intent.ACTION_SEND.equals(action) && type != null) {
             if ("text/plain".equals(type)) {
                 String title = intent.getStringExtra(Intent.EXTRA_SUBJECT);
@@ -70,12 +85,12 @@ public class NotifyMe extends BaseActivity {
                 date_txt = "Will Notify at " + Utilities.getInstance().getDateFromMS(
                         mNote.getNotification_when()
                 );
-                mNotifDate.setBackgroundColor(getResources().getColor(R.color.pending_notif));
+                mLineView.setBackgroundColor(getResources().getColor(R.color.pending_notif));
             } else {
                 date_txt = "Notified at " + Utilities.getInstance().getDateFromMS(
                         mNote.getNotification_when()
                 );
-                mNotifDate.setBackgroundColor(getResources().getColor(R.color.completed_notif));
+                mLineView.setBackgroundColor(getResources().getColor(R.color.completed_notif));
             }
             mNotifDate.setText(date_txt);
         }
@@ -92,6 +107,7 @@ public class NotifyMe extends BaseActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.reNotify:
+                setResult(RESULT_OK);
                 Utilities.getInstance().createWhenDialog(mContext, NotifyMe.this, mNote, true);
                 return true;
         }
@@ -112,12 +128,10 @@ public class NotifyMe extends BaseActivity {
         mNotifText.setMovementMethod(LinkMovementMethod.getInstance());
     }
 
-    public static void launchNotifyMe(BaseActivity activity, View transitionView, Notif note) {
-        ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(activity,
-                transitionView, "temp_view");
-        Intent intent = new Intent(activity, NotifyMe.class);
-        intent.putExtra(Utilities.NOTIF_EXTRA_ID_KEY, note.get_id());
-        ActivityCompat.startActivity(activity, intent, options.toBundle());
+    @Override
+    public void onBackPressed() {
+        setResult(RESULT_CANCELED);
+        super.onBackPressed();
     }
 
 }
