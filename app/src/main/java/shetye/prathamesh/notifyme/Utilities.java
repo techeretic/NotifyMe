@@ -169,6 +169,7 @@ public class Utilities {
                     mTimeBtn.setTextColor(Color.RED);
                 } else {
                     mTimeBtn.setTextColor(Color.GRAY);
+                    mDateBtn.setTextColor(Color.GRAY);
                 }
             }
         } else {
@@ -179,6 +180,7 @@ public class Utilities {
                     mDateBtn.setTextColor(Color.RED);
                 } else {
                     mDateBtn.setTextColor(Color.GRAY);
+                    mTimeBtn.setTextColor(Color.GRAY);
                 }
             }
         }
@@ -283,7 +285,7 @@ public class Utilities {
 
         final EditText mNotifyTitleText = (EditText) mNewNotifDialog.findViewById(R.id.what_notify_title_txt);
         final EditText mNotifyText = (EditText) mNewNotifDialog.findViewById(R.id.what_notify_txt);
-        final Button notifyBtn = (Button) mNewNotifDialog.findViewById(R.id.notify_me_button);
+        /*final Button notifyBtn = (Button) mNewNotifDialog.findViewById(R.id.notify_me_button);
 
         notifyBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -302,10 +304,10 @@ public class Utilities {
                 mNewNotifDialog.dismiss();
                 /*if (parentActivity != null) {
                     ((Notifications) parentActivity).refreshNotifications();
-                }*/
+                }* /
             }
             }
-        });
+        });*/
         mNewNotifDialog.show();
     }
 

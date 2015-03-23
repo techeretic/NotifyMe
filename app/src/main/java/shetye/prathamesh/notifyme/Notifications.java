@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.util.Pair;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.Gravity;
@@ -29,7 +30,9 @@ public class Notifications extends BaseActivity {
     private Context mContext;
     private List<Notif> mNotifications;
     private MyNotifRecAdapter mAdapter;
+    private SwipeRefreshLayout mSwipeRefreshLayout;
     private static boolean sDoUpdate;
+    private static boolean sFABClicked;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,11 +42,27 @@ public class Notifications extends BaseActivity {
         mNotifications = DatabaseHelper.getInstance(mContext).getAllNotifications();
 
         mRecyclerView = (RecyclerView) findViewById(R.id.recycleNotificions);
+        mSwipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipeRefreshLayout);
+
+        mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                refreshNotifications();
+                try {
+                    wait(1000);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                mSwipeRefreshLayout.setRefreshing(false);
+            }
+        });
 
         mFAddButton = new FloatingActionButton.Builder(this)
                 .withDrawable(getResources().getDrawable(R.drawable.ic_action_new))
                 .withButtonColor(getResources().getColor(R.color.accent))
                 .withGravity(Gravity.BOTTOM | Gravity.END).withMargins(0, 0, 15, 15).create();
+
+        mFAddButton.setTransitionName("new_notif");
 
         NotifAnimator.animateFAB(getApplicationContext(), mFAddButton, NotifAnimator.IN,
                 NotifAnimator.BOTTOM);
@@ -51,7 +70,14 @@ public class Notifications extends BaseActivity {
         mFAddButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Utilities.getInstance().createNewNotifDialog(mContext, Notifications.this);
+            //Utilities.getInstance().createNewNotifDialog(mContext, Notifications.this);
+                sFABClicked = true;
+                ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(
+                        Notifications.this,
+                        mFAddButton, "new_notif");
+                Intent intent = new Intent(Notifications.this, NotificationDetail.class);
+                ActivityCompat.startActivityForResult(Notifications.this, intent,
+                        Utilities.UPDATED, options.toBundle());
             }
         });
 
@@ -101,6 +127,8 @@ public class Notifications extends BaseActivity {
                         Utilities.UPDATED, options.toBundle());
             }
         }));
+
+        mToolbar.setNavigationIcon(R.mipmap.ic_launcher);
     }
 
     @Override
@@ -113,8 +141,12 @@ public class Notifications extends BaseActivity {
         super.onResume();
         if (sDoUpdate)
             refreshNotifications();
-        NotifAnimator.animateFAB(getApplicationContext(), mFAddButton,
+        if (!sFABClicked) {
+            NotifAnimator.animateFAB(getApplicationContext(), mFAddButton,
                     NotifAnimator.IN, NotifAnimator.BOTTOM);
+        } else {
+            sFABClicked = false;
+        }
     }
 
     @Override

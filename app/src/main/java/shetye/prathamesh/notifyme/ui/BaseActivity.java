@@ -10,7 +10,7 @@ import shetye.prathamesh.notifyme.R;
 
 public abstract class BaseActivity extends ActionBarActivity {
 
-    private Toolbar mToolbar;
+    protected Toolbar mToolbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -19,7 +19,7 @@ public abstract class BaseActivity extends ActionBarActivity {
         mToolbar = (Toolbar) findViewById(R.id.my_awesome_toolbar);
         if (mToolbar != null) {
             setSupportActionBar(mToolbar);
-            //getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
     }
 

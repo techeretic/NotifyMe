@@ -12,8 +12,9 @@
     <string name="ok_label">Ok</string>
     <string name="cancel_label">Cancel</string>
     <string name="notify_btn_label">Notify Me</string>
+    <string name="title_activity_notify_me">Notification Details</string>
     <string name="title_activity_notifier">Notifier</string>
-    <string name="title_activity_notification_detail">NotificationDetail</string>
+    <string name="title_activity_notification_detail">New Notification</string>
     <string name="title_hint">Title</string>
     <string name="note_hint">Text</string>
     <string name="title_activity_notifications">Notifications</string>
