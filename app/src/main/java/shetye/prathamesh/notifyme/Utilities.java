@@ -115,7 +115,7 @@ public class Utilities {
         mTimeBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                TimePickerDialog timePickerDialog = new TimePickerDialog(context, R.style.DialogTheme, new TimePickerDialog.OnTimeSetListener() {
+                TimePickerDialog timePickerDialog = new TimePickerDialog(context, new TimePickerDialog.OnTimeSetListener() {
                     @Override
                     public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
                         Time selectedTime = new Time();
@@ -136,7 +136,7 @@ public class Utilities {
         mDateBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                DatePickerDialog datePickerDialog = new DatePickerDialog(context, R.style.DialogTheme,
+                DatePickerDialog datePickerDialog = new DatePickerDialog(context,
                         new DatePickerDialog.OnDateSetListener() {
                             @Override
                             public void onDateSet(DatePicker view, int yy, int mm, int dd) {
@@ -276,39 +276,6 @@ public class Utilities {
         Date d = new Date(timeInMS);
         SimpleDateFormat sdf = new SimpleDateFormat("hh:mm a cccc, MMMM dd");
         return sdf.format(d);
-    }
-
-    public void createNewNotifDialog(final Context context, final Activity parentActivity) {
-        mNewNotifDialog = new Dialog(context, R.style.DialogTheme);
-        mNewNotifDialog.setContentView(R.layout.activity_notify_me);
-        mNewNotifDialog.setTitle("What to Notify??");
-
-        final EditText mNotifyTitleText = (EditText) mNewNotifDialog.findViewById(R.id.what_notify_title_txt);
-        final EditText mNotifyText = (EditText) mNewNotifDialog.findViewById(R.id.what_notify_txt);
-        /*final Button notifyBtn = (Button) mNewNotifDialog.findViewById(R.id.notify_me_button);
-
-        notifyBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-            if (!mNotifyText.getText().toString().isEmpty()) {
-                Notif n = new Notif(
-                    DatabaseHelper.getInstance(context).getNewId(),
-                    mNotifyTitleText.getText().toString(),
-                    mNotifyText.getText().toString(),
-                    0,
-                    false,
-                    false,
-                    false
-                );
-                createWhenDialog(context, parentActivity, n, false);
-                mNewNotifDialog.dismiss();
-                /*if (parentActivity != null) {
-                    ((Notifications) parentActivity).refreshNotifications();
-                }* /
-            }
-            }
-        });*/
-        mNewNotifDialog.show();
     }
 
     public void dismissNotification(Context context, int ID) {
