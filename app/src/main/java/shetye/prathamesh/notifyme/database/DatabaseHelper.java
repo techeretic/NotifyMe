@@ -131,11 +131,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             cursor.getString(1),
             cursor.getString(2),
             Long.parseLong(cursor.getString(3)),
-            Integer.parseInt(cursor.getString(4)) == 1 ? true : false,
-            Integer.parseInt(cursor.getString(5)) == 1 ? true : false,
-            Integer.parseInt(cursor.getString(6)) == 1 ? true : false
+            Integer.parseInt(cursor.getString(4)) == 1,
+            Integer.parseInt(cursor.getString(5)) == 1,
+            Integer.parseInt(cursor.getString(6)) == 1
         );
-        // return Note
+        cursor.close();
         return note;
     }
 
@@ -155,9 +155,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     cursor.getString(1),
                     cursor.getString(2),
                     Long.parseLong(cursor.getString(3)),
-                    Integer.parseInt(cursor.getString(4)) == 1 ? true : false,
-                    Integer.parseInt(cursor.getString(5)) == 1 ? true : false,
-                    Integer.parseInt(cursor.getString(6)) == 1 ? true : false
+                    Integer.parseInt(cursor.getString(4)) == 1,
+                    Integer.parseInt(cursor.getString(5)) == 1,
+                    Integer.parseInt(cursor.getString(6)) == 1
                 );
                 // Adding contact to list
                 noteList.add(note);

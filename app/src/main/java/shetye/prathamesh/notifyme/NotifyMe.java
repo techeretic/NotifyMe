@@ -7,6 +7,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.ActivityOptionsCompat;
 import android.text.method.LinkMovementMethod;
 import android.text.method.ScrollingMovementMethod;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -39,19 +40,6 @@ public class NotifyMe extends BaseActivity {
         mNotifDate = (TextView) findViewById(R.id.when_to_notify);
         mLineView = findViewById(R.id.line_view);
 
-        if (intent.getBooleanExtra(Utilities.NOTIF_EXTRA_DONE_LATER_KEY, false)) {
-            int id = intent.getIntExtra(Utilities.NOTIF_EXTRA_ID_KEY, 0);
-            Utilities.getInstance().dismissNotification(mContext, id);
-            mNote = DatabaseHelper.getInstance(mContext).getNote(id);
-            if (mNote != null) {
-                mNotifTitle.setText(mNote.getNotification_title());
-                mNotifText.setText(mNote.getNotification_content());
-                mNotifDate.setText(Utilities.getInstance().getDateFromMS(
-                        mNote.getNotification_when()
-                ));
-            }
-            Utilities.getInstance().createWhenDialog(mContext, NotifyMe.this, mNote, true);
-        } else
         if (Intent.ACTION_SEND.equals(action) && type != null) {
             if ("text/plain".equals(type)) {
                 String title = intent.getStringExtra(Intent.EXTRA_SUBJECT);
@@ -75,6 +63,7 @@ public class NotifyMe extends BaseActivity {
             }
         } else {
             int ID = getIntent().getIntExtra(Utilities.NOTIF_EXTRA_ID_KEY, 0);
+            Log.d("NotifyMe", "In NotifyMe | ID received via Intent = " + ID);
             Utilities.getInstance().dismissNotification(this, ID);
             mNote = DatabaseHelper.getInstance(this).getNote(ID);
             mNotifTitle.setText(mNote.getNotification_title());

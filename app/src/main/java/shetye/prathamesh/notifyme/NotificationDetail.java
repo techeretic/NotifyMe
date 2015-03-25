@@ -3,6 +3,7 @@ package shetye.prathamesh.notifyme;
 import android.content.Context;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -27,6 +28,18 @@ public class NotificationDetail extends BaseActivity {
 
         mNotifyTitleText = (EditText) findViewById(R.id.what_notify_title_txt);
         mNotifyText = (EditText) findViewById(R.id.what_notify_txt);
+
+        if (getIntent().getBooleanExtra(Utilities.NOTIF_EXTRA_DONE_LATER_KEY, false)) {
+            int id = getIntent().getIntExtra(Utilities.NOTIF_EXTRA_ID_KEY, 0);
+            Log.d("NotifyMe","In NotificationDetail | ID received via Intent = " + id);
+            Utilities.getInstance().dismissNotification(mContext, id);
+            mNote = DatabaseHelper.getInstance(mContext).getNote(id);
+            if (mNote != null) {
+                mNotifyTitleText.setText(mNote.getNotification_title());
+                mNotifyText.setText(mNote.getNotification_content());
+            }
+            Utilities.getInstance().createWhenDialog(mContext, NotificationDetail.this, mNote, true);
+        }
     }
 
     @Override

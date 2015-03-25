@@ -49,7 +49,7 @@ public class Notifications extends BaseActivity {
             public void onRefresh() {
                 refreshNotifications();
                 try {
-                    wait(1000);
+                    //wait(1000);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -84,7 +84,6 @@ public class Notifications extends BaseActivity {
         mRecyclerView.setOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
-                // TODO Auto-generated method stub
                 super.onScrollStateChanged(recyclerView, newState);
                 if (newState == RecyclerView.SCROLL_STATE_IDLE) {
                     // special handler to avoid displaying half elements
@@ -100,7 +99,6 @@ public class Notifications extends BaseActivity {
 
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-                // TODO Auto-generated method stub
                 super.onScrolled(recyclerView, dx, dy);
                 recyclerView.animate();
             }
