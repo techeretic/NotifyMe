@@ -31,9 +31,15 @@ public class RecieveAndNotify extends BroadcastReceiver {
                 Log.d("NotifyMe", "Utilities.NOTIF_SERVICE_DONE_ACTION = " + Utilities.NOTIF_SERVICE_DONE_ACTION);
                 Utilities.getInstance().dismissNotification(context, id);
                 break;
-            case Utilities.BOOT_COMPLETE_INTENT:
+            case Intent.ACTION_BOOT_COMPLETED:
                 Log.d("NotifyMe", "Received BOOT COMPLETE");
                 Utilities.getInstance().reArmAlarms(context);
+                break;
+            case Intent.ACTION_PACKAGE_REPLACED:
+                Log.d("NotifyMe", "intent.getData().getSchemeSpecificPart() = " + intent.getData().getSchemeSpecificPart());
+                if(intent.getData().getSchemeSpecificPart().equals(context.getPackageName())) {
+                    Utilities.getInstance().reArmAlarms(context);
+                }
                 break;
         }
     }

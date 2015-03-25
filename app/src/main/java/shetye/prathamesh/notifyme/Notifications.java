@@ -2,6 +2,7 @@ package shetye.prathamesh.notifyme;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.ActivityOptionsCompat;
@@ -24,7 +25,8 @@ import shetye.prathamesh.notifyme.ui.RecyclerItemClickListener;
 
 
 public class Notifications extends BaseActivity {
-
+    public static final String SHARED_PREF_APP_DATA = "APP_DATA";
+    public static final String SHARED_PREF_KEY = "VERSION";
     private FloatingActionButton mFAddButton;
     private RecyclerView mRecyclerView;
     private Context mContext;
@@ -33,12 +35,15 @@ public class Notifications extends BaseActivity {
     private SwipeRefreshLayout mSwipeRefreshLayout;
     private static boolean sDoUpdate;
     private static boolean sFABClicked;
+    private SharedPreferences mPrefs;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mContext = this;
         sDoUpdate = true;
+        mPrefs = getSharedPreferences(SHARED_PREF_APP_DATA, MODE_PRIVATE);
+        updateVersion();
         mNotifications = DatabaseHelper.getInstance(mContext).getAllNotifications();
 
         mRecyclerView = (RecyclerView) findViewById(R.id.recycleNotificions);
@@ -165,5 +170,21 @@ public class Notifications extends BaseActivity {
         mAdapter = new MyNotifRecAdapter(mContext, mNotifications);
         mRecyclerView.setAdapter(mAdapter);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(mContext, LinearLayoutManager.VERTICAL, false));
+    }
+
+    private void updateVersion() {
+        String version;
+        try {
+            version = getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
+        } catch (Exception e) {
+            e.printStackTrace();
+            version = "1";
+        }
+        if (mPrefs.getString(SHARED_PREF_KEY,"1").equals(version)) {
+            SharedPreferences.Editor editor = mPrefs.edit();
+            editor.putString(SHARED_PREF_KEY, version);
+            editor.commit();
+            Utilities.getInstance().reArmAlarms(mContext);
+        }
     }
 }

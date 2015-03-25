@@ -44,7 +44,6 @@ public class Utilities {
     public static final String NOTIF_EXTRA_DONE_LATER_KEY = "NOTIF_DONE_OR_LATER";
     public static final String NOTIF_SERVICE_ACTION = "shetye.prathamesh.GENERATE_NOTIFICATION";
     public static final String NOTIF_SERVICE_DONE_ACTION = "shetye.prathamesh.DONE_NOTIFICATION";
-    public static final String BOOT_COMPLETE_INTENT = "android.intent.action.BOOT_COMPLETED";
     public static final int UPDATED = 7;
     private static Utilities instance;
     private Dialog mDialog;
