@@ -10,8 +10,10 @@ import android.support.v4.util.Pair;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
+import android.widget.LinearLayout;
 
 import java.util.List;
 
@@ -108,7 +110,25 @@ public class Notifications extends BaseActivity {
             }
         });
 
-        mRecyclerView.addOnItemTouchListener(new RecyclerItemClickListener(this, new RecyclerItemClickListener.OnItemClickListener() {
+        mRecyclerView.addOnItemTouchListener(new RecyclerItemClickListener(this, mRecyclerView, new RecyclerItemClickListener.OnItemClickListener() {
+            @Override
+            public void onItemLongClick(View view, int position) {
+                /*Log.d("NotifyMe", "In OnLongClickView");
+                Log.d("NotifyMe","In OnLongClickView | View item_content = " + view.findViewById(R.id.item_content));*/
+                LinearLayout content = (LinearLayout) view.findViewById(R.id.item_content);
+                LinearLayout controller = (LinearLayout) view.findViewById(R.id.item_controllers);
+                if (content.getVisibility() == View.INVISIBLE) {
+                    content.setVisibility(View.VISIBLE);
+                    controller.setVisibility(View.INVISIBLE);
+                } else {
+                    content.setVisibility(View.INVISIBLE);
+                    controller.setVisibility(View.VISIBLE);
+                }
+                //String tag = (String) layout.getTag(R.id.item_content);
+
+                //Log.d("NotifyMe", "In OnLongClickView | layout TAG Value = " + tag);
+            }
+
             @Override
             public void onItemClick(View view, int position) {
                 if (mFAddButton.getVisibility() == View.VISIBLE) {

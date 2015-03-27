@@ -2,9 +2,11 @@ package shetye.prathamesh.notifyme.ui;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import org.w3c.dom.Text;
@@ -53,6 +55,8 @@ public class MyNotifRecAdapter extends
                 Utilities.getInstance().getDateFromMS(
                 mNotifs.get(position).getNotification_when()
         ));
+        viewHolder.item_content.setTag(R.id.item_content,viewHolder.item_controller);
+        viewHolder.item_controller.setTag(R.id.item_content,viewHolder.item_content);
     }
 
     @Override
@@ -66,12 +70,16 @@ public class MyNotifRecAdapter extends
         public TextView notifText;
         public TextView notifDate;
         public View lineView;
+        public LinearLayout item_content;
+        public LinearLayout item_controller;
 
         public ViewHolder(View view) {
             super(view);
             notifTitle = (TextView) view.findViewById(R.id.notify_title_txt);
             notifText = (TextView) view.findViewById(R.id.notify_txt);
             notifDate = (TextView) view.findViewById(R.id.when_to_notify);
+            item_content = (LinearLayout) view.findViewById(R.id.item_content);
+            item_controller = (LinearLayout) view.findViewById(R.id.item_controllers);
             lineView = view.findViewById(R.id.line_view);
         }
     }

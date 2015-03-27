@@ -9,17 +9,18 @@
     android:layout_marginBottom="10dp"
     android:layout_marginStart="2dp"
     android:layout_marginEnd="2dp"
-    android:clickable="true"
-    android:focusable="true"
-    android:padding="5dp"
-    android:id="@+id/notif_holder"
-    android:background="@drawable/recviewbackground" >
+    android:background="@drawable/recviewbackground"
+    android:id="@+id/notif_holder" >
 
     <LinearLayout
         android:orientation="vertical"
         android:id="@+id/item_content"
+        android:clickable="true"
+        android:focusable="true"
+        android:background="@drawable/recviewbackground"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:padding="5dp">
 
         <TextView
             android:layout_width="match_parent"
@@ -75,10 +76,14 @@
         android:orientation="horizontal"
         android:id="@+id/item_controllers"
         android:visibility="invisible"
+        android:background="@color/primary"
         android:layout_width="match_parent"
         android:layout_height="match_parent" >
         <ImageView
             android:id="@+id/archive_notif"
-            />
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/abc_btn_rating_star_off_mtrl_alpha"
+            android:gravity="center_horizontal|center_vertical"/>
     </LinearLayout>
 </RelativeLayout>
