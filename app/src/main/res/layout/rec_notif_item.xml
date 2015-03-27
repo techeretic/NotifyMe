@@ -17,6 +17,7 @@
 
     <LinearLayout
         android:orientation="vertical"
+        android:id="@+id/item_content"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
@@ -28,6 +29,7 @@
             android:textAlignment="center"
             android:transitionName="when_to_notify"
             android:layout_marginTop="5dp"
+            android:layout_marginEnd="5dp"
             android:gravity="bottom|end"
             android:layout_gravity="bottom|end"
             android:textAppearance="@style/TextAppearance.AppCompat.Small" />
@@ -61,12 +63,22 @@
             android:id="@+id/notify_txt"
             android:transitionName="notify_txt"
             android:layout_marginTop="5dp"
+            android:layout_marginBottom="10dp"
             android:paddingStart="10dp"
             android:paddingEnd="10dp"
             android:maxLines="5"
             android:ellipsize="end"
             android:textAppearance="@style/TextAppearance.AppCompat.Medium"/>
+    </LinearLayout>
 
-
+    <LinearLayout
+        android:orientation="horizontal"
+        android:id="@+id/item_controllers"
+        android:visibility="invisible"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" >
+        <ImageView
+            android:id="@+id/archive_notif"
+            />
     </LinearLayout>
 </RelativeLayout>
