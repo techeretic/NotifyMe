@@ -5,6 +5,7 @@
     <item
         android:id="@+id/notify_me"
         android:title="@string/notify_btn_label"
+        android:icon="@drawable/draw_notify"
         android:orderInCategory="100"
         notifyme:showAsAction="collapseActionView|always" />
 </menu>

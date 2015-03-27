@@ -8,8 +8,8 @@ android {
         applicationId "shetye.prathamesh.notifyme"
         minSdkVersion 21
         targetSdkVersion 22
-        versionCode 3
-        versionName "0.0.3"
+        versionCode 4
+        versionName "0.0.4"
     }
     buildTypes {
         release {

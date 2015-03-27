@@ -256,13 +256,13 @@ public class Utilities {
         inboxStyle.addLine(message);
         NotificationCompat.Builder mBuilder =
                 new NotificationCompat.Builder(context)
-                        .setSmallIcon(R.drawable.ic_dashboard_light)
+                        .setSmallIcon(R.drawable.ic_notif)
                         .setContentTitle(newTitle)
                         .setContentText(message)
                         .setPriority(NotificationCompat.PRIORITY_MAX)
                         .setContentIntent(resultPendingIntent)
-                        .addAction(R.drawable.ic_action_edit, "Later", remindLaterIntent)
-                        .addAction(R.drawable.ic_action_discard, "Done", completedIntent)
+                        .addAction(R.drawable.ic_restore, "Later", remindLaterIntent)
+                        .addAction(R.drawable.ic_done, "Done", completedIntent)
                         .setStyle(inboxStyle);
         Log.d("NotifyMe", "Notifying for ID : " + ID);
         notificationManager.notify(ID, mBuilder.build());

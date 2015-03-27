@@ -6,7 +6,7 @@
         android:id="@+id/reNotify"
         android:orderInCategory="100"
         app:showAsAction="always"
-        android:title="Re-Notify"
-        style="@android:style/Widget.ActionButton" />
+        android:icon="@drawable/draw_notify"
+        android:title="@string/renotify_btn_label" />
 
 </menu>

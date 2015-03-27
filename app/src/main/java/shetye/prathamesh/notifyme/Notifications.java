@@ -75,14 +75,13 @@ public class Notifications extends BaseActivity {
         mFAddButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-            //Utilities.getInstance().createNewNotifDialog(mContext, Notifications.this);
-                sFABClicked = true;
-                ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(
-                        Notifications.this,
-                        mFAddButton, "new_notif");
-                Intent intent = new Intent(Notifications.this, NotificationDetail.class);
-                ActivityCompat.startActivityForResult(Notifications.this, intent,
-                        Utilities.UPDATED, options.toBundle());
+            sFABClicked = true;
+            ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(
+                    Notifications.this,
+                    mFAddButton, "new_notif");
+            Intent intent = new Intent(Notifications.this, NotificationDetail.class);
+            ActivityCompat.startActivityForResult(Notifications.this, intent,
+                    Utilities.UPDATED, options.toBundle());
             }
         });
 
