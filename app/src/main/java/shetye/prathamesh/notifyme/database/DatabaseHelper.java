@@ -143,7 +143,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public List<Notif> getAllNotifications() {
         SQLiteDatabase db = this.getReadableDatabase();
         List<Notif> noteList = new ArrayList<Notif>();
-        String selectQuery = "SELECT  * FROM " + MYNOTIF + " ORDER BY " + KEY_DATE + " DESC";
+        String selectQuery = "SELECT  * FROM " + MYNOTIF
+                + " WHERE " + KEY_COMPLETE + " = 0"
+                + " ORDER BY " + KEY_DATE + " DESC";
 
         Cursor cursor = db.rawQuery(selectQuery, null);
 
@@ -151,13 +153,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         if (cursor.moveToFirst()) {
             do {
                 Notif note = new Notif(
-                    Integer.parseInt(cursor.getString(0)),
-                    cursor.getString(1),
-                    cursor.getString(2),
-                    Long.parseLong(cursor.getString(3)),
-                    Integer.parseInt(cursor.getString(4)) == 1,
-                    Integer.parseInt(cursor.getString(5)) == 1,
-                    Integer.parseInt(cursor.getString(6)) == 1
+                        Integer.parseInt(cursor.getString(0)),
+                        cursor.getString(1),
+                        cursor.getString(2),
+                        Long.parseLong(cursor.getString(3)),
+                        Integer.parseInt(cursor.getString(4)) == 1,
+                        Integer.parseInt(cursor.getString(5)) == 1,
+                        Integer.parseInt(cursor.getString(6)) == 1
                 );
                 // Adding contact to list
                 noteList.add(note);
@@ -181,6 +183,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     // Updating single contact
     public int updateNote(Notif note) {
         SQLiteDatabase db = this.getWritableDatabase();
+
+        Log.d("NotifyMe","IN UpdateNotif = " + note.isComplete());
 
         ContentValues values = new ContentValues();
         values.put(KEY_CONTENT, note.getNotification_content()); // Note
@@ -243,28 +247,51 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             String.valueOf(ID)
         });
     }
-/*
+
+    public int markIncomplete(int ID) {
+
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+        values.put(KEY_COMPLETE, false); // Is Completed
+
+        // updating row
+        return db.update(MYNOTIF, values, KEY_ID + " = ?", new String[]{
+                String.valueOf(ID)
+        });
+    }
+
     //Searching notes based on note content
     public List<Notif> searchNotes(String query) {
         SQLiteDatabase db = this.getReadableDatabase();
         List<Notif> noteList = new ArrayList<Notif>();
-        String selectQuery = "SELECT  * FROM " + MYNOTIF
-                + " WHERE UPPER(" + KEY_NOTE + ") LIKE UPPER('%" + query + "%') "
+        String selectQuery = "SELECT  "
+                + KEY_ID + ","
+                + KEY_TITLE + ","
+                + KEY_CONTENT + ","
+                + KEY_DATE + ","
+                + KEY_REPEAT + ","
+                + KEY_COMPLETE + ","
+                + KEY_ONGOING
+                + " FROM " + MYNOTIF
+                + " WHERE UPPER(" + KEY_CONTENT + ") LIKE UPPER('%" + query + "%') "
                 + " OR UPPER(" + KEY_TITLE + ") LIKE UPPER('%" + query + "%') "
                 + "ORDER BY " + KEY_DATE + " DESC";
 
-        Log.d(LOG_TAG, "Query = " + query);
-        Log.d(LOG_TAG, "selectQuery = " + selectQuery);
         Cursor cursor = db.rawQuery(selectQuery, null);
 
         // looping through all rows and adding to list
         if (cursor.moveToFirst()) {
             do {
-                Notif note = new Notif();
-                note.setID(Integer.parseInt(cursor.getString(0)));
-                note.setPTitle(cursor.getString(1));
-                note.setPNote(cursor.getString(2));
-                note.setDate(cursor.getString(3));
+                Notif note = new Notif(
+                        Integer.parseInt(cursor.getString(0)),
+                        cursor.getString(1),
+                        cursor.getString(2),
+                        Long.parseLong(cursor.getString(3)),
+                        Integer.parseInt(cursor.getString(4)) == 1,
+                        Integer.parseInt(cursor.getString(5)) == 1,
+                        Integer.parseInt(cursor.getString(6)) == 1
+                );
                 // Adding contact to list
                 noteList.add(note);
             } while (cursor.moveToNext());
@@ -274,5 +301,4 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         // return contact list
         return noteList;
     }
-    */
 }

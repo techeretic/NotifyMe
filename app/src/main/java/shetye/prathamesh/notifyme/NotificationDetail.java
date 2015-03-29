@@ -20,12 +20,13 @@ public class NotificationDetail extends BaseActivity {
     private Notif mNote;
     private EditText mNotifyTitleText;
     private EditText mNotifyText;
+    private static boolean existingNotif = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mContext = this;
-
+        existingNotif = false;
         mNotifyTitleText = (EditText) findViewById(R.id.what_notify_title_txt);
         mNotifyText = (EditText) findViewById(R.id.what_notify_txt);
 
@@ -35,10 +36,25 @@ public class NotificationDetail extends BaseActivity {
             Utilities.getInstance().dismissNotification(mContext, id);
             mNote = DatabaseHelper.getInstance(mContext).getNote(id);
             if (mNote != null) {
-                mNotifyTitleText.setText(mNote.getNotification_title());
+                if (mNote.getNotification_title().isEmpty()) {
+                    mNotifyTitleText.setVisibility(View.INVISIBLE);
+                } else {
+                    mNotifyTitleText.setVisibility(View.VISIBLE);
+                    mNotifyTitleText.setText(mNote.getNotification_title());
+                }
                 mNotifyText.setText(mNote.getNotification_content());
             }
             Utilities.getInstance().createWhenDialog(mContext, NotificationDetail.this, mNote, true);
+        } else if (getIntent().getBooleanExtra(Utilities.NOTIF_EXTRA_EDIT_KEY, false)) {
+            int id = getIntent().getIntExtra(Utilities.NOTIF_EXTRA_ID_KEY, 0);
+            Log.d("NotifyMe","In NotificationDetail | ID received via Intent = " + id);
+            Utilities.getInstance().dismissNotification(mContext, id);
+            mNote = DatabaseHelper.getInstance(mContext).getNote(id);
+            if (mNote != null) {
+                mNotifyTitleText.setText(mNote.getNotification_title());
+                mNotifyText.setText(mNote.getNotification_content());
+            }
+            existingNotif = true;
         }
     }
 
@@ -58,10 +74,17 @@ public class NotificationDetail extends BaseActivity {
         switch (item.getItemId()) {
             case R.id.notify_me:
                 if (!mNotifyText.getText().toString().isEmpty()) {
-                    saveNotif();
+                    saveNotif(false);
                     setResult(RESULT_OK);
                     Utilities.getInstance().createWhenDialog(mContext, NotificationDetail.this,
                             mNote, true);
+                }
+                return true;
+            case R.id.save_me:
+                if (!mNotifyText.getText().toString().isEmpty()) {
+                    saveNotif(true);
+                    setResult(RESULT_OK);
+                    finish();
                 }
                 return true;
         }
@@ -69,7 +92,13 @@ public class NotificationDetail extends BaseActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    private void saveNotif() {
+    private void saveNotif(boolean withCurrTime) {
+        if (existingNotif) {
+            mNote.setNotification_title(mNotifyTitleText.getText().toString());
+            mNote.setNotification_content(mNotifyText.getText().toString());
+            DatabaseHelper.getInstance(mContext).updateNote(mNote);
+            return;
+        }
         mNote = new Notif(
                 DatabaseHelper.getInstance(mContext).getNewId(),
                 mNotifyTitleText.getText().toString(),
@@ -79,6 +108,10 @@ public class NotificationDetail extends BaseActivity {
                 false,
                 false
         );
+        if (withCurrTime) {
+            mNote.setNotification_when(System.currentTimeMillis());
+            DatabaseHelper.getInstance(mContext).addNotif(mNote);
+        }
     }
 
     @Override

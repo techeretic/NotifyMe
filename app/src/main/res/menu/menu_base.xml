@@ -1,7 +1,14 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context="shetye.prathamesh.notifyme.ui.BaseActivity">
-    <item android:id="@+id/action_settings" android:title="@string/action_settings"
-        android:orderInCategory="100" app:showAsAction="never" />
+    tools:context="shetye.prathamesh.notifyme.Notifications">
+
+    <item
+        android:id="@+id/search"
+        android:orderInCategory="100"
+        app:showAsAction="collapseActionView|always"
+        android:icon="@drawable/draw_search"
+        android:title="@string/action_search"
+        app:actionViewClass="android.support.v7.widget.SearchView" />
+
 </menu>

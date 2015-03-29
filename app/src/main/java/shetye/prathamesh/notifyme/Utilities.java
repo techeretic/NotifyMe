@@ -1,5 +1,7 @@
 package shetye.prathamesh.notifyme;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.DatePickerDialog;
@@ -19,9 +21,11 @@ import android.text.format.Time;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
+import android.view.ViewAnimationUtils;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TimePicker;
 
 import java.text.SimpleDateFormat;
@@ -42,8 +46,12 @@ public class Utilities {
     public static final String NOTIF_EXTRA_ID_KEY = "NOTIF_ID";
     public static final String NOTIF_EXTRA_TITLE_KEY = "NOTIF_TITLE";
     public static final String NOTIF_EXTRA_DONE_LATER_KEY = "NOTIF_DONE_OR_LATER";
+    public static final String NOTIF_EXTRA_EDIT_KEY = "NOTIF_EDIT";
     public static final String NOTIF_SERVICE_ACTION = "shetye.prathamesh.GENERATE_NOTIFICATION";
     public static final String NOTIF_SERVICE_DONE_ACTION = "shetye.prathamesh.DONE_NOTIFICATION";
+    public static final String SHARED_PREF_APP_DATA = "APP_DATA";
+    public static final String SHARED_PREF_KEY = "VERSION";
+    public static final String SHARED_PREF_SEARCH_KEY = "SEARCH_STAT";
     public static final int UPDATED = 7;
     private static Utilities instance;
     private Dialog mDialog;
@@ -289,7 +297,6 @@ public class Utilities {
         NotificationManager notificationManager = (NotificationManager) context
             .getSystemService(Context.NOTIFICATION_SERVICE);
         notificationManager.cancel(ID);
-        DatabaseHelper.getInstance(context).markComplete(ID);
     }
 
     public void reArmAlarms(Context context) {
@@ -300,4 +307,65 @@ public class Utilities {
             }
         }
     }
+
+    public void hideView(final LinearLayout lview) {
+        // get the center for the clipping circle
+        int cx = (lview.getLeft() + lview.getRight()) / 2;
+        int cy = (lview.getTop() + lview.getBottom()) / 2;
+        // get the initial radius for the clipping circle
+        int initialRadius = lview.getWidth();
+        // create the animation (the final radius is zero)
+        Animator anim =
+                ViewAnimationUtils.createCircularReveal(lview, cx, cy, initialRadius, 0);
+        // make the view invisible when the animation is done
+        anim.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                super.onAnimationEnd(animation);
+                lview.setVisibility(View.INVISIBLE);
+            }
+        });
+        anim.start();
+    }
+
+    public void showView(LinearLayout lview) {
+        // get the center for the clipping circle
+        int cx = (lview.getLeft() + lview.getRight()) / 2;
+        int cy = (lview.getTop() + lview.getBottom()) / 2;
+        // get the final radius for the clipping circle
+        int finalRadius = Math.max(lview.getWidth(), lview.getHeight());
+        // create the animator for this view (the start radius is zero)
+        Animator anim =
+                ViewAnimationUtils.createCircularReveal(lview, cx, cy, 0, finalRadius);
+        // make the view visible and start the animation
+        lview.setVisibility(View.VISIBLE);
+        anim.start();
+    }
+
+    public void shareNote(Context context, int ID) {
+        Notif n = DatabaseHelper.getInstance(context).getNote(ID);
+        Intent sharingIntent = new Intent(android.content.Intent.ACTION_SEND);
+        sharingIntent.setType("text/plain");
+        sharingIntent.putExtra(Intent.EXTRA_SUBJECT, n.getNotification_title());
+        sharingIntent.putExtra(Intent.EXTRA_TEXT, n.getNotification_content());
+        context.startActivity(Intent.createChooser(sharingIntent, context.getString(R.string.share_notif_label)));
+    }
+
+    public void editNote(Context context, int ID) {
+        Intent editIntent = new Intent(context, NotificationDetail.class);
+        editIntent.setData(Uri.parse(Integer.toString(ID)));
+        editIntent.putExtra(Utilities.NOTIF_EXTRA_ID_KEY, ID);
+        editIntent.putExtra(Utilities.NOTIF_EXTRA_EDIT_KEY,true);
+        context.startActivity(editIntent);
+    }
+
+    public void reNotify(Context context, int ID) {
+        Intent laterIntent = new Intent(context, NotificationDetail.class);
+        laterIntent.setData(Uri.parse(Integer.toString(ID)));
+        laterIntent.putExtra(Utilities.NOTIF_EXTRA_ID_KEY, ID);
+        laterIntent.putExtra(Utilities.NOTIF_EXTRA_DONE_LATER_KEY,true);
+        context.startActivity(laterIntent);
+    }
+
+
 }

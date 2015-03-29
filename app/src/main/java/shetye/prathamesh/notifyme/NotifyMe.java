@@ -63,9 +63,15 @@ public class NotifyMe extends BaseActivity {
             }
         } else {
             int ID = getIntent().getIntExtra(Utilities.NOTIF_EXTRA_ID_KEY, 0);
+
             Log.d("NotifyMe", "In NotifyMe | ID received via Intent = " + ID);
             Utilities.getInstance().dismissNotification(this, ID);
             mNote = DatabaseHelper.getInstance(this).getNote(ID);
+            if (mNote.getNotification_title().isEmpty()) {
+                mNotifTitle.setVisibility(View.GONE);
+            } else {
+                mNotifTitle.setVisibility(View.VISIBLE);
+            }
             mNotifTitle.setText(mNote.getNotification_title());
             mNotifText.setText(mNote.getNotification_content());
             mNotifText.setMovementMethod(new ScrollingMovementMethod());
@@ -98,6 +104,15 @@ public class NotifyMe extends BaseActivity {
             case R.id.reNotify:
                 setResult(RESULT_OK);
                 Utilities.getInstance().createWhenDialog(mContext, NotifyMe.this, mNote, true);
+                return true;
+            case R.id.editNotif:
+                setResult(RESULT_OK);
+                Utilities.getInstance().editNote(mContext, mNote.get_id());
+                finish();
+                return true;
+            case R.id.shareNotif:
+                setResult(RESULT_CANCELED);
+                Utilities.getInstance().shareNote(mContext, mNote.get_id());
                 return true;
         }
 

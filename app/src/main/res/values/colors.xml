@@ -8,6 +8,7 @@
     <color name="completed_notif">#FF4081</color>
 
     <color name="notif_item_bckg">#fffff7fa</color>
+    <color name="white">#ffffffff</color>
 
 
     <color name="primary">#3F51B5</color>

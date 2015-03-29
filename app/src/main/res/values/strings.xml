@@ -12,12 +12,22 @@
     <string name="ok_label">Ok</string>
     <string name="cancel_label">Cancel</string>
     <string name="notify_btn_label">Notify Me</string>
+    <string name="save_btn_label">Save Me</string>
     <string name="renotify_btn_label">Re-Notify</string>
-    <string name="title_activity_notify_me">Notification Details</string>
+    <string name="title_activity_notify_me">Details</string>
     <string name="title_activity_notifier">Notifier</string>
     <string name="title_activity_notification_detail">New Notification</string>
     <string name="title_hint">Title</string>
     <string name="note_hint">Text</string>
     <string name="title_activity_notifications">Notifications</string>
     <string name="title_activity_base">BaseActivity</string>
+    <string name="archive_label">Archive</string>
+    <string name="share_label">Share</string>
+    <string name="edit_label">Edit</string>
+    <string name="share_notif_label">Share Notification Content</string>
+    <string name="title_activity_search_results">SearchResults</string>
+    <string name="action_search">Search</string>
+    <string name="search_results">Search Results</string>
+    <string name="search_hint">Search for your note</string>
+    <string name="search_text">Search for Note</string>
 </resources>

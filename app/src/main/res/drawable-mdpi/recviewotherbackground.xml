@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ripple xmlns:android="http://schemas.android.com/apk/res/android"
+    android:color="@color/primary">
+    <item android:drawable="@drawable/recview_other_rounded" />
+<!--
+    <item>
+        <selector xmlns:android="http://schemas.android.com/apk/res/android">
+            <item
+                android:state_activated="true"
+                android:drawable="@color/accent" />
+            <item android:drawable="@color/icons" />
+        </selector>
+    </item>
+-->
+</ripple>

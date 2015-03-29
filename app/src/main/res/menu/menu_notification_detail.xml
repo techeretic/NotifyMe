@@ -3,10 +3,22 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="shetye.prathamesh.notifyme.NotificationDetail">
     <item
+        android:id="@+id/editNotif"
+        android:orderInCategory="100"
+        app:showAsAction="always"
+        android:icon="@drawable/draw_edit"
+        android:title="@string/edit_label" />
+    <item
         android:id="@+id/reNotify"
         android:orderInCategory="100"
         app:showAsAction="always"
         android:icon="@drawable/draw_notify"
         android:title="@string/renotify_btn_label" />
+    <item
+        android:id="@+id/shareNotif"
+        android:orderInCategory="100"
+        app:showAsAction="always"
+        android:icon="@drawable/draw_share"
+        android:title="@string/share_label" />
 
 </menu>

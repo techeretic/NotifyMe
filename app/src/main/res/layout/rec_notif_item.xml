@@ -9,7 +9,7 @@
     android:layout_marginBottom="10dp"
     android:layout_marginStart="2dp"
     android:layout_marginEnd="2dp"
-    android:background="@drawable/recviewbackground"
+    android:background="@drawable/recview_rounded"
     android:id="@+id/notif_holder" >
 
     <LinearLayout
@@ -18,9 +18,10 @@
         android:clickable="true"
         android:focusable="true"
         android:background="@drawable/recviewbackground"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:padding="5dp">
+        android:layout_width="fill_parent"
+        android:layout_height="150dp"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentBottom="true">
 
         <TextView
             android:layout_width="match_parent"
@@ -30,7 +31,9 @@
             android:textAlignment="center"
             android:transitionName="when_to_notify"
             android:layout_marginTop="5dp"
-            android:layout_marginEnd="5dp"
+            android:layout_marginStart="5dp"
+            android:layout_marginEnd="3dp"
+            android:padding="10dp"
             android:gravity="bottom|end"
             android:layout_gravity="bottom|end"
             android:textAppearance="@style/TextAppearance.AppCompat.Small" />
@@ -75,15 +78,98 @@
     <LinearLayout
         android:orientation="horizontal"
         android:id="@+id/item_controllers"
-        android:visibility="invisible"
-        android:background="@color/primary"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" >
-        <ImageView
+        android:visibility="gone"
+        android:clickable="true"
+        android:focusable="true"
+        android:gravity="center_horizontal|center_vertical"
+        android:background="@drawable/recviewotherbackground"
+        android:layout_height="150dp"
+        android:layout_width="fill_parent" >
+<!--
+        <LinearLayout
+            android:orientation="vertical"
+            android:gravity="center_horizontal|center_vertical"
+            android:padding="20dp"
+            android:clickable="true"
             android:id="@+id/archive_notif"
-            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@drawable/abc_btn_rating_star_off_mtrl_alpha"
-            android:gravity="center_horizontal|center_vertical"/>
+            android:layout_width="wrap_content" >
+            <ImageView
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:minHeight="40dp"
+                android:minWidth="40dp"
+                android:padding="5dp"
+                android:src="@drawable/ic_archive" />
+            <TextView
+                android:text="@string/archive_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="@style/TextAppearance.AppCompat.Small" />
+        </LinearLayout>
+-->
+        <LinearLayout
+            android:orientation="vertical"
+            android:gravity="center_horizontal|center_vertical"
+            android:padding="20dp"
+            android:clickable="true"
+            android:id="@+id/edit_notif"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content" >
+            <ImageView
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:minHeight="40dp"
+                android:minWidth="40dp"
+                android:padding="5dp"
+                android:src="@drawable/ic_edit" />
+            <TextView
+                android:text="@string/edit_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="@style/TextAppearance.AppCompat.Small" />
+        </LinearLayout>
+        <LinearLayout
+            android:orientation="vertical"
+            android:gravity="center_horizontal|center_vertical"
+            android:padding="20dp"
+            android:clickable="true"
+            android:id="@+id/re_notif"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content" >
+            <ImageView
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:minHeight="40dp"
+                android:minWidth="40dp"
+                android:padding="5dp"
+                android:src="@drawable/ic_restore_bar" />
+            <TextView
+                android:text="@string/renotify_btn_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="@style/TextAppearance.AppCompat.Small" />
+        </LinearLayout>
+        <LinearLayout
+            android:orientation="vertical"
+            android:gravity="center_horizontal|center_vertical"
+            android:padding="20dp"
+            android:clickable="true"
+            android:id="@+id/share_notif"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content" >
+            <ImageView
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:minHeight="40dp"
+                android:minWidth="40dp"
+                android:padding="5dp"
+                android:src="@drawable/ic_share" />
+            <TextView
+                android:text="@string/share_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="@style/TextAppearance.AppCompat.Small" />
+        </LinearLayout>
     </LinearLayout>
 </RelativeLayout>

@@ -1,0 +1,23 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="shetye.prathamesh.notifyme.SearchResults">
+
+    <include
+        android:id="@+id/my_awesome_toolbar"
+        layout="@layout/activity_base"/>
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/searchResults"
+        android:scrollbars="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:horizontalSpacing="15dp"
+        android:verticalSpacing="25dp"
+        android:gravity="clip_vertical|clip_horizontal"
+        android:padding="5dp"
+        android:layout_below="@+id/my_awesome_toolbar"
+        android:divider="@android:color/transparent"
+        android:dividerHeight="50.0sp"
+        android:stretchMode="columnWidth"/>
+</RelativeLayout>

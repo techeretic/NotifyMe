@@ -3,7 +3,7 @@
     package="shetye.prathamesh.notifyme" >
 
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
-    <uses-permission android:name="android.permission.VIBRATE"/>
+    <uses-permission android:name="android.permission.VIBRATE" />
 
     <application
         android:allowBackup="true"
@@ -13,6 +13,9 @@
         <activity
             android:name=".Notifications"
             android:label="@string/title_activity_notifications" >
+            <meta-data
+                android:name="android.app.default_searchable"
+                android:value=".SearchResults" />
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -25,9 +28,12 @@
             android:parentActivityName=".Notifications" >
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />
+
                 <category android:name="android.intent.category.DEFAULT" />
+
                 <data android:mimeType="text/plain" />
             </intent-filter>
+
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="shetye.prathamesh.notifyme.Notifications" />
@@ -42,15 +48,34 @@
             </intent-filter>
             <intent-filter android:priority="1000" >
                 <action android:name="android.intent.action.PACKAGE_REPLACED" />
-                <data android:scheme="package"/>
+
+                <data android:scheme="package" />
             </intent-filter>
         </receiver>
 
         <activity
             android:name=".NotificationDetail"
             android:label="@string/title_activity_notification_detail"
-            android:windowSoftInputMode="stateHidden"
+            android:parentActivityName=".Notifications"
+            android:windowSoftInputMode="stateHidden" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="shetye.prathamesh.notifyme.Notifications" />
+        </activity>
+        <activity
+            android:name=".SearchResults"
+            android:label="@string/title_activity_search_results"
             android:parentActivityName=".Notifications" >
+            <intent-filter>
+                <action android:name="com.google.android.gms.actions.SEARCH_ACTION"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.SEARCH" />
+            </intent-filter>
+            <meta-data
+                android:name="android.app.searchable"
+                android:resource="@xml/searchable" />
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="shetye.prathamesh.notifyme.Notifications" />

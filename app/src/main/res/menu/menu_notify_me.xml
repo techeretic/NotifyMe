@@ -3,9 +3,15 @@
     xmlns:notifyme="http://schemas.android.com/apk/res-auto"
     tools:context=".NotifyMe">
     <item
+        android:id="@+id/save_me"
+        android:title="@string/notify_btn_label"
+        android:icon="@drawable/draw_save"
+        android:orderInCategory="100"
+        notifyme:showAsAction="collapseActionView|ifRoom" />
+    <item
         android:id="@+id/notify_me"
         android:title="@string/notify_btn_label"
         android:icon="@drawable/draw_notify"
         android:orderInCategory="100"
-        notifyme:showAsAction="collapseActionView|always" />
+        notifyme:showAsAction="collapseActionView|ifRoom" />
 </menu>

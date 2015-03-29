@@ -1,5 +1,6 @@
 package shetye.prathamesh.notifyme;
 
+import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -7,13 +8,19 @@ import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.util.Pair;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.SearchView;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
+import android.widget.AutoCompleteTextView;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import java.util.List;
 
@@ -27,25 +34,61 @@ import shetye.prathamesh.notifyme.ui.RecyclerItemClickListener;
 
 
 public class Notifications extends BaseActivity {
-    public static final String SHARED_PREF_APP_DATA = "APP_DATA";
-    public static final String SHARED_PREF_KEY = "VERSION";
+    private static final String LOG_TAG = "Notifications";
     private FloatingActionButton mFAddButton;
     private RecyclerView mRecyclerView;
     private Context mContext;
     private List<Notif> mNotifications;
-    private MyNotifRecAdapter mAdapter;
     private SwipeRefreshLayout mSwipeRefreshLayout;
     private static boolean sDoUpdate;
     private static boolean sFABClicked;
     private SharedPreferences mPrefs;
+    private MenuItem mSearchItem;
+
+    private static View sView;
+    private static int sPosition;
+
+    private void resetView(int position, View view) {
+        if (position != sPosition && sView != null) {
+            LinearLayout content = (LinearLayout) sView.findViewById(R.id.item_content);
+            LinearLayout controller = (LinearLayout) sView.findViewById(R.id.item_controllers);
+            Utilities.getInstance().hideView(controller);
+            Utilities.getInstance().showView(content);
+            sPosition = position;
+            sView = view;
+        }
+    }
+
+    private void showView(int position, View view) {
+        LinearLayout content = (LinearLayout) view.findViewById(R.id.item_content);
+        LinearLayout controller = (LinearLayout) view.findViewById(R.id.item_controllers);
+
+        Log.d("NotifyMe","Content Height = " + content.getHeight());
+        Log.d("NotifyMe","controller Height = " + controller.getHeight());
+
+        if (content.getVisibility() == View.INVISIBLE) {
+            Utilities.getInstance().hideView(controller);
+            Utilities.getInstance().showView(content);
+            content.setClickable(true);
+            sPosition = -1;
+            sView = null;
+        } else {
+            sPosition = position;
+            sView = view;
+            Utilities.getInstance().hideView(content);
+            Utilities.getInstance().showView(controller);
+            content.setClickable(false);
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mContext = this;
         sDoUpdate = true;
-        mPrefs = getSharedPreferences(SHARED_PREF_APP_DATA, MODE_PRIVATE);
+        mPrefs = getSharedPreferences(Utilities.SHARED_PREF_APP_DATA, MODE_PRIVATE);
         updateVersion();
+
         mNotifications = DatabaseHelper.getInstance(mContext).getAllNotifications();
 
         mRecyclerView = (RecyclerView) findViewById(R.id.recycleNotificions);
@@ -92,8 +135,6 @@ public class Notifications extends BaseActivity {
             public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
                 super.onScrollStateChanged(recyclerView, newState);
                 if (newState == RecyclerView.SCROLL_STATE_IDLE) {
-                    // special handler to avoid displaying half elements
-                    // recyclerView.scrollTo(rec, y);
                     NotifAnimator.animateFAB(getApplicationContext(), mFAddButton, NotifAnimator.IN,
                             NotifAnimator.BOTTOM);
                 } else {
@@ -110,39 +151,43 @@ public class Notifications extends BaseActivity {
             }
         });
 
-        mRecyclerView.addOnItemTouchListener(new RecyclerItemClickListener(this, mRecyclerView, new RecyclerItemClickListener.OnItemClickListener() {
+        mRecyclerView.addOnItemTouchListener(new RecyclerItemClickListener(this, mRecyclerView,
+                new RecyclerItemClickListener.OnItemClickListener() {
             @Override
             public void onItemLongClick(View view, int position) {
-                /*Log.d("NotifyMe", "In OnLongClickView");
-                Log.d("NotifyMe","In OnLongClickView | View item_content = " + view.findViewById(R.id.item_content));*/
-                LinearLayout content = (LinearLayout) view.findViewById(R.id.item_content);
-                LinearLayout controller = (LinearLayout) view.findViewById(R.id.item_controllers);
-                if (content.getVisibility() == View.INVISIBLE) {
-                    content.setVisibility(View.VISIBLE);
-                    controller.setVisibility(View.INVISIBLE);
-                } else {
-                    content.setVisibility(View.INVISIBLE);
-                    controller.setVisibility(View.VISIBLE);
-                }
-                //String tag = (String) layout.getTag(R.id.item_content);
-
-                //Log.d("NotifyMe", "In OnLongClickView | layout TAG Value = " + tag);
+                resetView(position, view);
+                showView(position, view);
             }
 
             @Override
             public void onItemClick(View view, int position) {
+                LinearLayout content = (LinearLayout) view.findViewById(R.id.item_content);
+                if (content.getVisibility()==View.INVISIBLE) {
+                    return;
+                }
                 if (mFAddButton.getVisibility() == View.VISIBLE) {
                     NotifAnimator.animateFAB(getApplicationContext(), mFAddButton,
                             NotifAnimator.OUT, NotifAnimator.BOTTOM);
                 }
                 Notif note = mNotifications.get(position);
-                ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(
-                        Notifications.this,
-                        Pair.create(view.findViewById(R.id.when_to_notify), "when_to_notify"),
-                        Pair.create(view.findViewById(R.id.notify_txt), "notify_txt"),
-                        Pair.create(view.findViewById(R.id.notify_title_txt), "notify_title_txt"),
-                        Pair.create(view.findViewById(R.id.line_view), "line_view")
-                );
+                ActivityOptionsCompat options;
+                TextView titleV = (TextView) view.findViewById(R.id.notify_title_txt);
+                if (titleV.getVisibility()==View.GONE) {
+                    options = ActivityOptionsCompat.makeSceneTransitionAnimation(
+                            Notifications.this,
+                            Pair.create(view.findViewById(R.id.when_to_notify), "when_to_notify"),
+                            Pair.create(view.findViewById(R.id.notify_txt), "notify_txt"),
+                            Pair.create(view.findViewById(R.id.line_view), "line_view")
+                    );
+                } else {
+                    options = ActivityOptionsCompat.makeSceneTransitionAnimation(
+                            Notifications.this,
+                            Pair.create(view.findViewById(R.id.when_to_notify), "when_to_notify"),
+                            Pair.create(view.findViewById(R.id.notify_txt), "notify_txt"),
+                            Pair.create(view.findViewById(R.id.notify_title_txt), "notify_title_txt"),
+                            Pair.create(view.findViewById(R.id.line_view), "line_view")
+                    );
+                }
                 Intent intent = new Intent(Notifications.this, NotifyMe.class);
                 intent.putExtra(Utilities.NOTIF_EXTRA_ID_KEY, note.get_id());
                 ActivityCompat.startActivityForResult(Notifications.this, intent,
@@ -161,6 +206,12 @@ public class Notifications extends BaseActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        if (mPrefs.getBoolean(Utilities.SHARED_PREF_SEARCH_KEY, false)) {
+            mPrefs.edit().putBoolean(Utilities.SHARED_PREF_SEARCH_KEY,false).commit();
+            if (mSearchItem != null) {
+                mSearchItem.collapseActionView();
+            }
+        }
         if (sDoUpdate)
             refreshNotifications();
         if (!sFABClicked) {
@@ -184,9 +235,17 @@ public class Notifications extends BaseActivity {
         }
     }
 
+    @Override
+    protected void onPause() {
+        super.onPause();
+        resetView(-1, null);
+        sView = null;
+        sPosition = -1;
+    }
+
     public void refreshNotifications() {
         mNotifications = DatabaseHelper.getInstance(mContext).getAllNotifications();
-        mAdapter = new MyNotifRecAdapter(mContext, mNotifications);
+        MyNotifRecAdapter mAdapter = new MyNotifRecAdapter(mContext, mNotifications);
         mRecyclerView.setAdapter(mAdapter);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(mContext, LinearLayoutManager.VERTICAL, false));
     }
@@ -199,11 +258,62 @@ public class Notifications extends BaseActivity {
             e.printStackTrace();
             version = "1";
         }
-        if (mPrefs.getString(SHARED_PREF_KEY,"1").equals(version)) {
+        if (mPrefs.getString(Utilities.SHARED_PREF_KEY,"1").equals(version)) {
             SharedPreferences.Editor editor = mPrefs.edit();
-            editor.putString(SHARED_PREF_KEY, version);
+            editor.putString(Utilities.SHARED_PREF_KEY, version);
             editor.commit();
             Utilities.getInstance().reArmAlarms(mContext);
+        }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_base, menu);
+        // Associate searchable configuration with the SearchView
+        mSearchItem = menu.findItem(R.id.search);
+        if (mSearchItem != null) {
+            Log.d(LOG_TAG, "searchItem is NOT null");
+        } else {
+            Log.d(LOG_TAG, "searchItem is null");
+        }
+        SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
+        SearchView searchView = (SearchView) MenuItemCompat.getActionView(mSearchItem);
+        if (searchView != null) {
+            searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
+            LinearLayout linearLayout1 = (LinearLayout) searchView.getChildAt(0);
+            LinearLayout linearLayout2 = (LinearLayout) linearLayout1.getChildAt(2);
+            LinearLayout linearLayout3 = (LinearLayout) linearLayout2.getChildAt(1);
+            AutoCompleteTextView autoComplete = (AutoCompleteTextView) linearLayout3.getChildAt(0);
+            autoComplete.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+                @Override
+                public void onFocusChange(View v, boolean hasFocus) {
+                    if (hasFocus) {
+                        NotifAnimator.animateFAB(getApplicationContext(), mFAddButton,
+                                NotifAnimator.OUT, NotifAnimator.BOTTOM);
+                    } else {
+                        NotifAnimator.animateFAB(getApplicationContext(), mFAddButton,
+                                NotifAnimator.IN, NotifAnimator.BOTTOM);
+                    }
+                }
+            });
+        } else {
+            Log.d(LOG_TAG, "searchView is null");
+        }
+
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (sView != null) {
+            resetView(-1, null);
+        } else {
+            super.onBackPressed();
         }
     }
 }

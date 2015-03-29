@@ -17,6 +17,7 @@ public class RecieveAndNotify extends BroadcastReceiver {
         int id = intent.getIntExtra(Utilities.NOTIF_EXTRA_ID_KEY,0);
         Log.d("NotifyMe","In RecieveAndNotify | ID received via Intent = " + id);
         String action = intent.getAction();
+        Log.d("NotifyMe","In RecieveAndNotify | action = " + action);
         switch (action) {
             case Utilities.NOTIF_SERVICE_ACTION:
                 Log.d("NotifyMe", "Utilities.NOTIF_SERVICE_ACTION = " + Utilities.NOTIF_SERVICE_ACTION);
