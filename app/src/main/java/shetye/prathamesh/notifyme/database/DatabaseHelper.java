@@ -144,7 +144,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getReadableDatabase();
         List<Notif> noteList = new ArrayList<Notif>();
         String selectQuery = "SELECT  * FROM " + MYNOTIF
-                + " WHERE " + KEY_COMPLETE + " = 0"
+                //+ " WHERE " + KEY_COMPLETE + " = 0"
                 + " ORDER BY " + KEY_DATE + " DESC";
 
         Cursor cursor = db.rawQuery(selectQuery, null);
