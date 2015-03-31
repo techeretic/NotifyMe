@@ -149,6 +149,7 @@ public class Notifications extends BaseActivity {
                     NotifAnimator.animateFAB(getApplicationContext(), mFAddButton, NotifAnimator.IN,
                             NotifAnimator.BOTTOM);
                 } else {
+                    resetView(-1, null);
                     NotifAnimator.animateFAB(getApplicationContext(), mFAddButton, NotifAnimator.OUT,
                             NotifAnimator.BOTTOM);
                 }
