@@ -110,7 +110,7 @@ public class Notifications extends BaseActivity {
             public void onRefresh() {
                 refreshNotifications();
                 try {
-                    //wait(1000);
+                    resetView(-1, null);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
