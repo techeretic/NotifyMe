@@ -4,12 +4,14 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.app.Activity;
 import android.app.AlarmManager;
+import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.TimePickerDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.media.Ringtone;
@@ -27,6 +29,8 @@ import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TimePicker;
+
+import com.google.android.gms.common.GooglePlayServicesUtil;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -53,6 +57,7 @@ public class Utilities {
     public static final String SHARED_PREF_KEY = "VERSION";
     public static final String SHARED_PREF_SEARCH_KEY = "SEARCH_STAT";
     public static final int UPDATED = 7;
+    public static final int RESOLVE_CONNECTION_REQUEST_CODE = 8;
     private static Utilities instance;
     private Dialog mDialog;
     private Button mTimeBtn;
@@ -367,5 +372,29 @@ public class Utilities {
         context.startActivity(laterIntent);
     }
 
+    public void showLegalNotice(Context context) {
+        new AlertDialog.Builder(context)
+                .setTitle("Legal Notice")
+                .setMessage(GooglePlayServicesUtil.getOpenSourceSoftwareLicenseInfo(context))
+                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                })
+                .setIcon(R.drawable.draw_info_dark)
+                .show();
+    }
 
+    public void showErrorDialog(Context context, String message) {
+        new AlertDialog.Builder(context)
+                .setTitle("Error")
+                .setMessage(message)
+                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                })
+                .setIcon(android.R.drawable.stat_notify_error)
+                .show();
+    }
 }

@@ -22,6 +22,9 @@ import android.widget.AutoCompleteTextView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.drive.Drive;
+
 import java.util.List;
 
 import shetye.prathamesh.notifyme.database.DatabaseHelper;
@@ -44,6 +47,7 @@ public class Notifications extends BaseActivity {
     private static boolean sFABClicked;
     private SharedPreferences mPrefs;
     private MenuItem mSearchItem;
+    private GoogleApiClient mGoogleApiClient;
 
     private static View sView;
     private static int sPosition;
@@ -88,6 +92,13 @@ public class Notifications extends BaseActivity {
         sDoUpdate = true;
         mPrefs = getSharedPreferences(Utilities.SHARED_PREF_APP_DATA, MODE_PRIVATE);
         updateVersion();
+
+        /*mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .addApi(Drive.API)
+                .addScope(Drive.SCOPE_FILE)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .build();*/
 
         mNotifications = DatabaseHelper.getInstance(mContext).getAllNotifications();
 
@@ -305,6 +316,11 @@ public class Notifications extends BaseActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.info:
+                Utilities.getInstance().showLegalNotice(mContext);
+                return true;
+        }
         return super.onOptionsItemSelected(item);
     }
 
