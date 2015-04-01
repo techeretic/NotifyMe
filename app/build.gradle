@@ -1,9 +1,16 @@
 apply plugin: 'com.android.application'
 
 android {
+    signingConfigs {
+        config {
+            keyAlias 'techeretic'
+            keyPassword 'austin316'
+            storeFile file('/home/prathamesh/Downloads/Prathamesh-Dev.store')
+            storePassword 'austin316'
+        }
+    }
     compileSdkVersion 22
     buildToolsVersion "21.1.2"
-
     defaultConfig {
         applicationId "shetye.prathamesh.notifyme"
         minSdkVersion 21
@@ -15,6 +22,10 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.config
+        }
+        debug {
+            signingConfig signingConfigs.config
         }
     }
 }

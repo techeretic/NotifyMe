@@ -3,6 +3,7 @@ package shetye.prathamesh.notifyme;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentSender;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
@@ -22,12 +23,19 @@ import android.widget.AutoCompleteTextView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.drive.Drive;
+import com.google.android.gms.drive.DriveApi;
+import com.google.android.gms.drive.DriveFolder;
+import com.google.android.gms.drive.MetadataChangeSet;
 
 import java.util.List;
 
 import shetye.prathamesh.notifyme.database.DatabaseHelper;
+import shetye.prathamesh.notifyme.database.DriveIntegrator;
 import shetye.prathamesh.notifyme.database.Notif;
 import shetye.prathamesh.notifyme.ui.BaseActivity;
 import shetye.prathamesh.notifyme.ui.FloatingActionButton;
@@ -36,8 +44,10 @@ import shetye.prathamesh.notifyme.ui.NotifAnimator;
 import shetye.prathamesh.notifyme.ui.RecyclerItemClickListener;
 
 
-public class Notifications extends BaseActivity {
+public class Notifications extends BaseActivity implements GoogleApiClient.ConnectionCallbacks,
+        GoogleApiClient.OnConnectionFailedListener {
     private static final String LOG_TAG = "Notifications";
+    private static int REQUEST_CODE_RESOLUTION = 10602966;
     private FloatingActionButton mFAddButton;
     private RecyclerView mRecyclerView;
     private Context mContext;
@@ -93,13 +103,6 @@ public class Notifications extends BaseActivity {
         mPrefs = getSharedPreferences(Utilities.SHARED_PREF_APP_DATA, MODE_PRIVATE);
         updateVersion();
 
-        /*mGoogleApiClient = new GoogleApiClient.Builder(this)
-                .addApi(Drive.API)
-                .addScope(Drive.SCOPE_FILE)
-                .addConnectionCallbacks(this)
-                .addOnConnectionFailedListener(this)
-                .build();*/
-
         mNotifications = DatabaseHelper.getInstance(mContext).getAllNotifications();
 
         mRecyclerView = (RecyclerView) findViewById(R.id.recycleNotificions);
@@ -108,9 +111,9 @@ public class Notifications extends BaseActivity {
         mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
+                resetView(-1, null);
                 refreshNotifications();
                 try {
-                    resetView(-1, null);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -244,12 +247,18 @@ public class Notifications extends BaseActivity {
             } else {
                 sDoUpdate = false;
             }
+        } else
+        if (requestCode == REQUEST_CODE_RESOLUTION && resultCode == RESULT_OK) {
+            mGoogleApiClient.connect();
         }
     }
 
     @Override
     protected void onPause() {
         super.onPause();
+        if (mGoogleApiClient != null) {
+            mGoogleApiClient.disconnect();
+        }
         resetView(-1, null);
         sView = null;
         sPosition = -1;
@@ -321,6 +330,9 @@ public class Notifications extends BaseActivity {
             case R.id.info:
                 Utilities.getInstance().showLegalNotice(mContext);
                 return true;
+            case R.id.drive:
+                startGoogleDriveSetup();
+                return true;
         }
         return super.onOptionsItemSelected(item);
     }
@@ -333,4 +345,92 @@ public class Notifications extends BaseActivity {
             super.onBackPressed();
         }
     }
+
+    private void startGoogleDriveSetup() {
+        if (mGoogleApiClient == null) {
+            mGoogleApiClient = new GoogleApiClient.Builder(mContext)
+                    .addApi(Drive.API)
+                    .addScope(Drive.SCOPE_APPFOLDER)
+                    .addConnectionCallbacks(this)
+                    .addOnConnectionFailedListener(this)
+                    .build();
+        }
+        mGoogleApiClient.connect();
+    }
+
+    @Override
+    public void onConnected(Bundle bundle) {
+        syncFilesToDrive();
+    }
+
+    @Override
+    public void onConnectionFailed(ConnectionResult result) {
+        // Called whenever the API client fails to connect.
+        Log.i(LOG_TAG, "GoogleApiClient connection failed: " + result.toString());
+        if (!result.hasResolution()) {
+            // show the localized error dialog.
+            Log.i(LOG_TAG, "NO RESOLUTION!! FML!");
+            GooglePlayServicesUtil.getErrorDialog(result.getErrorCode(), this, 0).show();
+            return;
+        }
+        // The failure has a resolution. Resolve it.
+        // Called typically when the app is not yet authorized, and an
+        // authorization
+        // dialog is displayed to the user.
+        try {
+            Log.i(LOG_TAG, "NO RESOLUTION!! FML!");
+            result.startResolutionForResult(this, REQUEST_CODE_RESOLUTION);
+        } catch (IntentSender.SendIntentException e) {
+            Log.e(LOG_TAG, "Exception while starting resolution activity", e);
+        }
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+        Log.d(LOG_TAG, "GoogleApiClient connection suspended");
+    }
+
+    private GoogleApiClient getGoogleApiClient() {
+        return mGoogleApiClient;
+    }
+
+    final private ResultCallback<DriveApi.DriveContentsResult> driveContentsCallback =
+            new ResultCallback<DriveApi.DriveContentsResult>() {
+                @Override
+                public void onResult(DriveApi.DriveContentsResult result) {
+                    if (!result.getStatus().isSuccess()) {
+                        Log.e(LOG_TAG, "Error while trying to create new file contents");
+                        return;
+                    }
+
+                    MetadataChangeSet changeSet = new MetadataChangeSet.Builder()
+                            .setTitle("appconfig.txt")
+                            .setMimeType("text/plain")
+                            .build();
+                    Drive.DriveApi.getAppFolder(getGoogleApiClient())
+                            .createFile(getGoogleApiClient(), changeSet, result.getDriveContents())
+                            .setResultCallback(fileCallback);
+                }
+            };
+
+    final private ResultCallback<DriveFolder.DriveFileResult> fileCallback = new
+            ResultCallback<DriveFolder.DriveFileResult>() {
+                @Override
+                public void onResult(DriveFolder.DriveFileResult result) {
+                    if (!result.getStatus().isSuccess()) {
+                        Log.e(LOG_TAG, "Error while trying to create the file");
+                        return;
+                    }
+                    Log.d(LOG_TAG, "Created a file in App Folder: "
+                            + result.getDriveFile().getDriveId());
+                }
+            };
+
+    private void syncFilesToDrive() {
+        List<Notif> notes = DatabaseHelper.getInstance(mContext).getAllNotifications();
+
+        Drive.DriveApi.newDriveContents(mGoogleApiClient)
+                .setResultCallback(driveContentsCallback);
+    }
+
 }
