@@ -21,12 +21,10 @@ import android.os.Vibrator;
 import android.support.v4.app.NotificationCompat;
 import android.text.format.Time;
 import android.util.Log;
-import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewAnimationUtils;
 import android.widget.Button;
 import android.widget.DatePicker;
-import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TimePicker;
 
@@ -56,6 +54,9 @@ public class Utilities {
     public static final String SHARED_PREF_APP_DATA = "APP_DATA";
     public static final String SHARED_PREF_KEY = "VERSION";
     public static final String SHARED_PREF_SEARCH_KEY = "SEARCH_STAT";
+    public static final String SHARED_PREF_DRIVE_KEY = "DRIVE_FOLDER_KEY";
+    public static final String SHARED_PREF_DRIVE_CONNECTED_KEY = "DRIVE_CONNECTED_KEY";
+    public static final String DRIVE_DEFAULT_FOLDER_NAME = "AppNotifications";
     public static final int UPDATED = 7;
     public static final int RESOLVE_CONNECTION_REQUEST_CODE = 8;
     private static Utilities instance;
@@ -70,6 +71,36 @@ public class Utilities {
     private int mSelectedHours;
     private int mSelectedMinutes;
     private boolean mPastDateSelected;
+
+    public enum states {
+        NOT_SYNCED(1),
+        SYNCED(2);
+
+        private int val;
+
+        private states(int val) {
+            this.val = val;
+        }
+
+        public int getValue() {
+            return val;
+        }
+
+        public boolean needsSync() {
+            if (val == 2)
+                return false;
+            else
+                return true;
+        }
+
+        public static states getState(int val) {
+            switch(val) {
+                case 1: return NOT_SYNCED;
+                case 2: return SYNCED;
+            }
+            return NOT_SYNCED;
+        }
+    }
 
     public static Utilities getInstance() {
         if (instance == null) {
@@ -397,4 +428,5 @@ public class Utilities {
                 .setIcon(android.R.drawable.stat_notify_error)
                 .show();
     }
+
 }

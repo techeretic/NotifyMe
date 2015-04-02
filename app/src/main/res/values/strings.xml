@@ -32,4 +32,7 @@
     <string name="search_text">Search for Note</string>
     <string name="info_label">Legal Notice</string>
     <string name="drive_label">Google Drive Sync</string>
+    <string name="syncing">Syncing all Notifications with Google Drive</string>
+    <string name="will_notify">Will Notify at </string>
+    <string name="notified">Notified at </string>
 </resources>

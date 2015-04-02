@@ -12,11 +12,13 @@ import android.util.Log;
 import java.util.ArrayList;
 import java.util.List;
 
+import shetye.prathamesh.notifyme.Utilities;
+
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String LOG_TAG = "DatabaseHelper";
 
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 2;
 
     // Database Name
     private static final String DATABASE_NAME = "MyNotifs";
@@ -32,6 +34,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String KEY_REPEAT = "notifDoRepeat";
     private static final String KEY_COMPLETE = "notifIsComplete";
     private static final String KEY_ONGOING = "notifIsOngoing";
+    private static final String KEY_DRIVEID = "notifDriveID";
+    private static final String KEY_STATUS = "notifState";
 
     private static int notes;
 
@@ -67,13 +71,26 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + KEY_DATE + " INTEGER, "
                 + KEY_REPEAT + " INTEGER, "
                 + KEY_COMPLETE + " INTEGER, "
-                + KEY_ONGOING + " INTEGER"
+                + KEY_ONGOING + " INTEGER, "
+                + KEY_DRIVEID + " TEXT, "
+                + KEY_STATUS + " INTEGER"
                 + ")";
         db.execSQL(CREATE_NOTIFICATIONS_TABLE);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+        Log.d(LOG_TAG, "In onUpgrade -> oldVersion = " + oldVersion + " newVersion = " + newVersion);
+        if (oldVersion < newVersion) {
+            if (newVersion == 2) {
+                db.execSQL("ALTER TABLE " + MYNOTIF + " ADD COLUMN " + KEY_DRIVEID + " TEXT");
+                db.execSQL("ALTER TABLE " + MYNOTIF + " ADD COLUMN " + KEY_STATUS + " INTEGER");
+                ContentValues values = new ContentValues();
+                values.put(KEY_DRIVEID,"");
+                values.put(KEY_STATUS,1);
+                db.update(MYNOTIF, values, "", null);
+            }
+        }
         /*
          * if (oldVersion < newVersion) { if (newVersion == 2) {
          * db.execSQL("ALTER TABLE " + MYNOTIF + " ADD COLUMN " + KEY_DATE +
@@ -102,6 +119,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         values.put(KEY_REPEAT, note.isRepeat()); // Is Repeating
         values.put(KEY_COMPLETE, note.isComplete()); // Is Completed
         values.put(KEY_ONGOING, note.isOngoing()); // Is Ongoing
+        values.put(KEY_DRIVEID, note.getDriveID()); // DriveID
+        values.put(KEY_STATUS, note.getState().getValue()); // DriveID
 
         // Inserting Row
         db.insert(MYNOTIF, null, values);
@@ -119,7 +138,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             KEY_DATE,
             KEY_REPEAT,
             KEY_COMPLETE,
-            KEY_ONGOING
+            KEY_ONGOING,
+            KEY_DRIVEID,
+            KEY_STATUS
         }, KEY_ID + "=?", new String[]{
                 String.valueOf(_id)
         }, null, null, null, null);
@@ -135,6 +156,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             Integer.parseInt(cursor.getString(5)) == 1,
             Integer.parseInt(cursor.getString(6)) == 1
         );
+        note.setDriveID(cursor.getString(7));
+        note.setState(Utilities.states.getState(Integer.parseInt(cursor.getString(8))));
         cursor.close();
         return note;
     }
@@ -161,6 +184,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                         Integer.parseInt(cursor.getString(5)) == 1,
                         Integer.parseInt(cursor.getString(6)) == 1
                 );
+                note.setDriveID(cursor.getString(7));
+                note.setState(Utilities.states.getState(Integer.parseInt(cursor.getString(8))));
                 // Adding contact to list
                 noteList.add(note);
             } while (cursor.moveToNext());
@@ -194,6 +219,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         values.put(KEY_REPEAT, note.isRepeat()); // Is Repeating
         values.put(KEY_COMPLETE, note.isComplete()); // Is Completed
         values.put(KEY_ONGOING, note.isOngoing()); // Is Ongoing
+        values.put(KEY_DRIVEID, note.getDriveID()); // DriveID
+        values.put(KEY_STATUS, note.getState().getValue()); // State
 
         // updating row
         return db.update(MYNOTIF, values, KEY_ID + " = ?", new String[]{
@@ -272,7 +299,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + KEY_DATE + ","
                 + KEY_REPEAT + ","
                 + KEY_COMPLETE + ","
-                + KEY_ONGOING
+                + KEY_ONGOING + ","
+                + KEY_DRIVEID + ","
+                + KEY_STATUS
                 + " FROM " + MYNOTIF
                 + " WHERE UPPER(" + KEY_CONTENT + ") LIKE UPPER('%" + query + "%') "
                 + " OR UPPER(" + KEY_TITLE + ") LIKE UPPER('%" + query + "%') "
@@ -292,6 +321,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                         Integer.parseInt(cursor.getString(5)) == 1,
                         Integer.parseInt(cursor.getString(6)) == 1
                 );
+                note.setDriveID(cursor.getString(7));
+                note.setState(Utilities.states.getState(Integer.parseInt(cursor.getString(8))));
                 // Adding contact to list
                 noteList.add(note);
             } while (cursor.moveToNext());
