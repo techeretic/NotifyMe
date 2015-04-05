@@ -45,6 +45,7 @@ import java.util.List;
 
 import shetye.prathamesh.notifyme.database.DatabaseHelper;
 import shetye.prathamesh.notifyme.database.Notif;
+import shetye.prathamesh.notifyme.service.DriveSyncService;
 import shetye.prathamesh.notifyme.ui.BaseActivity;
 import shetye.prathamesh.notifyme.ui.FloatingActionButton;
 import shetye.prathamesh.notifyme.ui.MyNotifRecAdapter;
@@ -65,8 +66,6 @@ public class Notifications extends BaseActivity implements GoogleApiClient.Conne
     private static boolean sFABClicked;
     private SharedPreferences mPrefs;
     private MenuItem mSearchItem;
-
-    private GoogleApiClient mGoogleApiClient;
     private boolean mIsDefaultFolderPresent = false;
     private boolean mIsConnected = false;
 
@@ -88,7 +87,7 @@ public class Notifications extends BaseActivity implements GoogleApiClient.Conne
         LinearLayout content = (LinearLayout) view.findViewById(R.id.item_content);
         LinearLayout controller = (LinearLayout) view.findViewById(R.id.item_controllers);
 
-        Log.d("NotifyMe","Content Height = " + content.getHeight());
+        Log.d("NotifyMe", "Content Height = " + content.getHeight());
         Log.d("NotifyMe","controller Height = " + controller.getHeight());
 
         if (content.getVisibility() == View.INVISIBLE) {
@@ -256,15 +255,15 @@ public class Notifications extends BaseActivity implements GoogleApiClient.Conne
             }
         } else
         if (requestCode == REQUEST_CODE_RESOLUTION && resultCode == RESULT_OK) {
-            mGoogleApiClient.connect();
+            Utilities.mGoogleApiClient.connect();
         }
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        if (mGoogleApiClient != null) {
-            mGoogleApiClient.disconnect();
+        if (Utilities.mGoogleApiClient != null) {
+            Utilities.mGoogleApiClient.disconnect();
         }
         resetView(-1, null);
         sView = null;
@@ -336,11 +335,7 @@ public class Notifications extends BaseActivity implements GoogleApiClient.Conne
                 Utilities.getInstance().showLegalNotice(mContext);
                 return true;
             case R.id.drive:
-                if (mIsConnected) {
-                    syncFilesToDrive();
-                } else {
-                    startGoogleDriveSetup();
-                }
+                startGoogleDriveSetup();
                 return true;
         }
         return super.onOptionsItemSelected(item);
@@ -356,21 +351,23 @@ public class Notifications extends BaseActivity implements GoogleApiClient.Conne
     }
 
     private void startGoogleDriveSetup() {
-        if (mGoogleApiClient == null) {
-            mGoogleApiClient = new GoogleApiClient.Builder(mContext)
+        if (Utilities.mGoogleApiClient == null) {
+            Utilities.mGoogleApiClient = new GoogleApiClient.Builder(mContext)
                     .addApi(Drive.API)
                     .addScope(Drive.SCOPE_FILE)
                     .addConnectionCallbacks(this)
                     .addOnConnectionFailedListener(this)
                     .build();
         }
-        mGoogleApiClient.connect();
+        Utilities.mGoogleApiClient.connect();
     }
 
     @Override
     public void onConnected(Bundle bundle) {
         mIsConnected = true;
-        syncFilesToDrive();
+        Intent i = new Intent(mContext, DriveSyncService.class);
+        i.setAction(Utilities.SYNC_SERVICE_ACTION);
+        startService(i);
     }
 
     @Override
@@ -404,144 +401,7 @@ public class Notifications extends BaseActivity implements GoogleApiClient.Conne
     }
 
     private GoogleApiClient getGoogleApiClient() {
-        return mGoogleApiClient;
+        return Utilities.mGoogleApiClient;
     }
 
-    private void syncFilesToDrive() {
-        createDefaultFolder();
-        if (mPrefs.getBoolean(Utilities.SHARED_PREF_DRIVE_CONNECTED_KEY, false)) {
-            Log.d(LOG_TAG, "Executing SyncTask");
-            new SyncTask(mContext).execute();
-        }
-    }
-
-    private void createDefaultFolder() {
-        isFolderPresent();
-        if (!mIsDefaultFolderPresent) {
-            Log.d(LOG_TAG, "Creating New Folder");
-            MetadataChangeSet changeSet = new MetadataChangeSet.Builder()
-                    .setTitle(Utilities.DRIVE_DEFAULT_FOLDER_NAME).build();
-            Drive.DriveApi.getRootFolder(getGoogleApiClient()).createFolder(
-                    getGoogleApiClient(), changeSet).setResultCallback(
-                        new ResultCallback<DriveFolder.DriveFolderResult>() {
-                @Override
-                public void onResult(DriveFolder.DriveFolderResult result) {
-                    if (!result.getStatus().isSuccess()) {
-                        Log.e(LOG_TAG, "Error while trying to create the folder");
-                        return;
-                    }
-                    mPrefs.edit().putString(Utilities.SHARED_PREF_DRIVE_KEY,
-                            result.getDriveFolder().getDriveId().encodeToString()).commit();
-                    mPrefs.edit().putBoolean(Utilities.SHARED_PREF_DRIVE_CONNECTED_KEY, true).commit();
-                }
-            });
-        }
-    }
-
-    private void isFolderPresent() {
-
-        Query query = new Query.Builder()
-                .addFilter(Filters.eq(SearchableField.MIME_TYPE, "application/vnd.google-apps.folder"))
-                .addFilter(Filters.eq(SearchableField.TITLE, Utilities.DRIVE_DEFAULT_FOLDER_NAME))
-                .build();
-        Drive.DriveApi.query(getGoogleApiClient(), query)
-            .setResultCallback(new ResultCallback<DriveApi.MetadataBufferResult>() {
-                   @Override
-                   public void onResult(DriveApi.MetadataBufferResult result) {
-                       if (!result.getStatus().isSuccess()) {
-                           Log.e(LOG_TAG, "Problem while retrieving results | Folder Missing");
-                           mIsDefaultFolderPresent = false;
-                           return;
-                       }
-                       Log.d(LOG_TAG, "FOLDER PRESENT! Setting mIsDefaultFolderPresent = true");
-                       mIsDefaultFolderPresent = true;
-                       mPrefs.edit().putBoolean(Utilities.SHARED_PREF_DRIVE_CONNECTED_KEY, true).commit();
-                   }
-               }
-            );
-    }
-
-    public class SyncTask extends AsyncTask<Void, Void, String> {
-        private ProgressDialog mProgress;
-        private Context mContext;
-        private List<Notif> mNotes;
-        private DriveId mFolderDriveId;
-
-        SyncTask(Context context) {
-            mContext = context;
-        }
-
-        @Override
-        protected void onPreExecute() {
-            mNotes = DatabaseHelper.getInstance(mContext).getAllNotifications();
-            mProgress = new ProgressDialog(mContext);
-            mProgress.setMessage(mContext.getString(R.string.syncing));
-            mProgress.show();
-            super.onPreExecute();
-        }
-
-        @Override
-        protected String doInBackground(Void... params) {
-            String driveID = mPrefs.getString(Utilities.SHARED_PREF_DRIVE_KEY,"");
-            if (driveID.isEmpty()) {
-                Log.e(LOG_TAG, "Folder doesn't exist");
-                return null;
-            }
-
-            mFolderDriveId = DriveId.decodeFromString(driveID);
-            for (Notif n : mNotes) {
-                Log.d(LOG_TAG, "Now processing Notif : " + n.get_id());
-                if (!n.getDriveID().isEmpty() && !n.getState().needsSync()) {
-                    Log.d(LOG_TAG, "Notif : " + n.get_id() + " already saved");
-                    continue;
-                }
-
-                // New Contents
-                DriveApi.DriveContentsResult driveContentsResult =
-                        Drive.DriveApi.newDriveContents(getGoogleApiClient()).await();
-                if (!driveContentsResult.getStatus().isSuccess()) {
-                    Log.e(LOG_TAG, "Failed at creating New Drive Content");
-                    return null;
-                }
-
-                // Writing the file
-                DriveContents originalContents = driveContentsResult.getDriveContents();
-                OutputStream os = originalContents.getOutputStream();
-                try {
-                    os.write(n.toByteArray(mContext));
-                } catch (IOException e) {
-                    Log.e(LOG_TAG, "Failed at Writing File");
-                    e.printStackTrace();
-                    return null;
-                }
-
-                // Creating the said file in Folder
-                DriveFolder folder = Drive.DriveApi.getFolder(getGoogleApiClient(), mFolderDriveId);
-                MetadataChangeSet changeSet = new MetadataChangeSet.Builder()
-                        .setTitle(String.valueOf(n.get_id()) + ".txt")
-                        .setMimeType("text/plain")
-                        .setStarred(true).build();
-                DriveFolder.DriveFileResult fileResult = folder.createFile(mGoogleApiClient,
-                        changeSet, driveContentsResult.getDriveContents()).await();
-
-                if (!fileResult.getStatus().isSuccess()) {
-                    Log.e(LOG_TAG, "Failed at Writing File TO DRIVE");
-                    return null;
-                }
-                n.setState(Utilities.states.SYNCED);
-                n.setDriveID(fileResult.getDriveFile().getDriveId().encodeToString());
-                n.updateThisInDB(mContext);
-            }
-            return "DONE";
-        }
-
-        @Override
-        protected void onPostExecute(String result) {
-            mProgress.dismiss();
-            if (result == null) {
-                Utilities.getInstance().showErrorDialog(mContext, "Drive Sync Failed");
-            }
-            super.onPostExecute(result);
-        }
-    }
 }

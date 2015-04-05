@@ -29,6 +29,7 @@ import android.widget.LinearLayout;
 import android.widget.TimePicker;
 
 import com.google.android.gms.common.GooglePlayServicesUtil;
+import com.google.android.gms.common.api.GoogleApiClient;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -51,14 +52,18 @@ public class Utilities {
     public static final String NOTIF_EXTRA_EDIT_KEY = "NOTIF_EDIT";
     public static final String NOTIF_SERVICE_ACTION = "shetye.prathamesh.GENERATE_NOTIFICATION";
     public static final String NOTIF_SERVICE_DONE_ACTION = "shetye.prathamesh.DONE_NOTIFICATION";
+    public static final String SYNC_SERVICE_ACTION = "shetye.prathamesh.START_SYNC";
     public static final String SHARED_PREF_APP_DATA = "APP_DATA";
     public static final String SHARED_PREF_KEY = "VERSION";
     public static final String SHARED_PREF_SEARCH_KEY = "SEARCH_STAT";
     public static final String SHARED_PREF_DRIVE_KEY = "DRIVE_FOLDER_KEY";
     public static final String SHARED_PREF_DRIVE_CONNECTED_KEY = "DRIVE_CONNECTED_KEY";
-    public static final String DRIVE_DEFAULT_FOLDER_NAME = "AppNotifications";
+    public static final String SHARED_PREF_DRIVE_FOLDERID_KEY = "DRIVE_FOLDERID_KEY";
+    public static final String DRIVE_DEFAULT_FOLDER_NAME = "App_Notifications";
+    public static final int SYNC_NOTIF_ID = 142857;
     public static final int UPDATED = 7;
-    public static final int RESOLVE_CONNECTION_REQUEST_CODE = 8;
+    public static final int SUCCESS = 1;
+    public static final int FAILURE = 0;
     private static Utilities instance;
     private Dialog mDialog;
     private Button mTimeBtn;
@@ -71,6 +76,8 @@ public class Utilities {
     private int mSelectedHours;
     private int mSelectedMinutes;
     private boolean mPastDateSelected;
+
+    public static GoogleApiClient mGoogleApiClient;
 
     public enum states {
         NOT_SYNCED(1),
@@ -429,4 +436,34 @@ public class Utilities {
                 .show();
     }
 
+    public void dismissSyncNotification(Context context) {
+        NotificationManager notificationManager = (NotificationManager) context
+                .getSystemService(Context.NOTIFICATION_SERVICE);
+        notificationManager.cancel(SYNC_NOTIF_ID);
+    }
+
+    public void showSyncNotification(Context context) {
+        NotificationManager notificationManager = (NotificationManager) context
+                .getSystemService(Context.NOTIFICATION_SERVICE);
+        Intent notificationIntent = new Intent(context, Notifications.class);
+        notificationIntent.setData(Uri.parse(Integer.toString(SYNC_NOTIF_ID)));
+
+        PendingIntent resultPendingIntent = PendingIntent.getActivity(
+                context,
+                0,
+                notificationIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT
+        );
+
+        NotificationCompat.Builder mBuilder =
+                new NotificationCompat.Builder(context)
+                        .setSmallIcon(R.drawable.ic_sync)
+                        .setContentTitle(context.getString(R.string.app_name))
+                        .setContentText(context.getString(R.string.sync_notification))
+                        .setPriority(NotificationCompat.PRIORITY_MAX)
+                        .setContentIntent(resultPendingIntent)
+                        .setOngoing(true);
+        Log.d("NotifyMe", "Ongoing Notification");
+        notificationManager.notify(SYNC_NOTIF_ID, mBuilder.build());
+    }
 }
