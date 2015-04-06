@@ -36,6 +36,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.Locale;
 
 import shetye.prathamesh.notifyme.database.DatabaseHelper;
 import shetye.prathamesh.notifyme.database.Notif;
@@ -45,18 +46,22 @@ import shetye.prathamesh.notifyme.receiver.RecieveAndNotify;
  * Created by p.shetye on 3/19/15.
  */
 public class Utilities {
+    public final String LOG_TAG = "Util-NotifyMe";
     public static final String NOTIF_EXTRA_KEY = "NOTIF_MESSAGE";
     public static final String NOTIF_EXTRA_ID_KEY = "NOTIF_ID";
     public static final String NOTIF_EXTRA_TITLE_KEY = "NOTIF_TITLE";
     public static final String NOTIF_EXTRA_DONE_LATER_KEY = "NOTIF_DONE_OR_LATER";
     public static final String NOTIF_EXTRA_EDIT_KEY = "NOTIF_EDIT";
+
     public static final String NOTIF_SERVICE_ACTION = "shetye.prathamesh.GENERATE_NOTIFICATION";
     public static final String NOTIF_SERVICE_DONE_ACTION = "shetye.prathamesh.DONE_NOTIFICATION";
+    public static final String NOTIF_SYNC_SERVICE_RECEIVER_KEY = "shetye.prathamesh.DRIVE_SYNC_RECEIVER";
     public static final String SYNC_SERVICE_ACTION = "shetye.prathamesh.START_SYNC";
+    public static final String APPDATA_SYNC_SERVICE_ACTION = "shetye.prathamesh.START_APPDATA_SYNC";
+
     public static final String SHARED_PREF_APP_DATA = "APP_DATA";
     public static final String SHARED_PREF_KEY = "VERSION";
     public static final String SHARED_PREF_SEARCH_KEY = "SEARCH_STAT";
-    public static final String SHARED_PREF_DRIVE_KEY = "DRIVE_FOLDER_KEY";
     public static final String SHARED_PREF_DRIVE_CONNECTED_KEY = "DRIVE_CONNECTED_KEY";
     public static final String SHARED_PREF_DRIVE_FOLDERID_KEY = "DRIVE_FOLDERID_KEY";
     public static final String DRIVE_DEFAULT_FOLDER_NAME = "App_Notifications";
@@ -76,6 +81,7 @@ public class Utilities {
     private int mSelectedHours;
     private int mSelectedMinutes;
     private boolean mPastDateSelected;
+    private Locale mLocale;
 
     public static GoogleApiClient mGoogleApiClient;
 
@@ -114,6 +120,13 @@ public class Utilities {
             instance = new Utilities();
         }
         return instance;
+    }
+
+    public Locale getLocale(Context context) {
+        if (mLocale == null) {
+            mLocale = context.getResources().getConfiguration().locale;
+        }
+        return mLocale;
     }
 
     public void createWhenDialog(final Context context, final Activity parentActivity, final Notif note, final boolean back) {
@@ -157,7 +170,7 @@ public class Utilities {
         mSelectedYear = dtNow.year;
         mSelectedMonth = dtNow.month;
         mSelectedDay = dtNow.monthDay;
-        updateBtnText(dtNow, false);
+        updateBtnText(dtNow, false, context);
         Time selectedTime = new Time();
         selectedTime.set(0, mSelectedMinutes, mSelectedHours, mSelectedDay, mSelectedMonth, mSelectedYear);
         mPastDateSelected = true;
@@ -176,7 +189,7 @@ public class Utilities {
                         } else {
                             mPastDateSelected = false;
                         }
-                        updateBtnText(selectedTime, true);
+                        updateBtnText(selectedTime, true, context);
                     }
                 }, mSelectedHours, mSelectedMinutes, false);
                 timePickerDialog.show();
@@ -200,7 +213,7 @@ public class Utilities {
                                 } else {
                                     mPastDateSelected = false;
                                 }
-                                updateBtnText(selectedTime, false);
+                                updateBtnText(selectedTime, false, context);
                             }
                         }, mSelectedYear, mSelectedMonth, mSelectedDay);
                 datePickerDialog.show();
@@ -209,10 +222,10 @@ public class Utilities {
         mDialog.show();
     }
 
-    private void updateBtnText(Time time, boolean setTime) {
+    private void updateBtnText(Time time, boolean setTime, Context context) {
         if (setTime) {
             if (mTimeBtn != null) {
-                SimpleDateFormat sdf = new SimpleDateFormat("hh:mm a");
+                SimpleDateFormat sdf = new SimpleDateFormat("hh:mm a", getLocale(context));
                 mTimeBtn.setText(sdf.format(new Date(time.toMillis(false))));
                 if (mPastDateSelected) {
                     mTimeBtn.setTextColor(Color.RED);
@@ -223,7 +236,7 @@ public class Utilities {
             }
         } else {
             if (mDateBtn != null) {
-                SimpleDateFormat sdf = new SimpleDateFormat("cccc, MMMM dd");
+                SimpleDateFormat sdf = new SimpleDateFormat("cccc, MMMM dd", getLocale(context));
                 mDateBtn.setText(sdf.format(new Date(time.toMillis(false))));
                 if (mPastDateSelected) {
                     mDateBtn.setTextColor(Color.RED);
@@ -315,7 +328,7 @@ public class Utilities {
                         .addAction(R.drawable.ic_restore, "Later", remindLaterIntent)
                         .addAction(R.drawable.ic_done, "Done", completedIntent)
                         .setStyle(inboxStyle);
-        Log.d("NotifyMe", "Notifying for ID : " + ID);
+        Log.d(LOG_TAG, "Notifying for ID : " + ID);
         notificationManager.notify(ID, mBuilder.build());
         try {
             Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
@@ -330,9 +343,9 @@ public class Utilities {
         }
     }
 
-    public String getDateFromMS(long timeInMS) {
+    public String getDateFromMS(long timeInMS, Locale locale) {
         Date d = new Date(timeInMS);
-        SimpleDateFormat sdf = new SimpleDateFormat("hh:mm a cccc, MMMM dd");
+        SimpleDateFormat sdf = new SimpleDateFormat("hh:mm a cccc, MMMM dd", locale);
         return sdf.format(d);
     }
 
@@ -457,13 +470,14 @@ public class Utilities {
 
         NotificationCompat.Builder mBuilder =
                 new NotificationCompat.Builder(context)
-                        .setSmallIcon(R.drawable.ic_sync)
+                        .setSmallIcon(R.drawable.ic_cloud_upload)
                         .setContentTitle(context.getString(R.string.app_name))
                         .setContentText(context.getString(R.string.sync_notification))
                         .setPriority(NotificationCompat.PRIORITY_MAX)
                         .setContentIntent(resultPendingIntent)
                         .setOngoing(true);
-        Log.d("NotifyMe", "Ongoing Notification");
+        Log.d(LOG_TAG, "Ongoing Notification");
         notificationManager.notify(SYNC_NOTIF_ID, mBuilder.build());
     }
+
 }

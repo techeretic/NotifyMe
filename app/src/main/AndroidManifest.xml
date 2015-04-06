@@ -89,7 +89,11 @@
         </activity>
 
         <service
-            android:name=".service.DriveSyncService"
+            android:name=".drive.DriveSyncService"
+            android:exported="false" >
+        </service>
+        <service
+            android:name=".drive.DriveAppFolderSyncService"
             android:exported="false" >
         </service>
     </application>

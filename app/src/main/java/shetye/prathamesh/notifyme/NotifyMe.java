@@ -57,7 +57,8 @@ public class NotifyMe extends BaseActivity {
                 mNotifTitle.setText(mNote.getNotification_title());
                 mNotifText.setText(mNote.getNotification_content());
                 mNotifDate.setText(Utilities.getInstance().getDateFromMS(
-                        mNote.getNotification_when()
+                        mNote.getNotification_when(),
+                        Utilities.getInstance().getLocale(mContext)
                 ));
                 Utilities.getInstance().createWhenDialog(mContext, NotifyMe.this, mNote, true);
             }
@@ -78,12 +79,14 @@ public class NotifyMe extends BaseActivity {
             String date_txt;
             if (mNote.getNotification_when() > System.currentTimeMillis()) {
                 date_txt = "Will Notify at " + Utilities.getInstance().getDateFromMS(
-                        mNote.getNotification_when()
+                        mNote.getNotification_when(),
+                        Utilities.getInstance().getLocale(mContext)
                 );
                 mLineView.setBackgroundColor(getResources().getColor(R.color.pending_notif));
             } else {
                 date_txt = "Notified at " + Utilities.getInstance().getDateFromMS(
-                        mNote.getNotification_when()
+                        mNote.getNotification_when(),
+                        Utilities.getInstance().getLocale(mContext)
                 );
                 mLineView.setBackgroundColor(getResources().getColor(R.color.completed_notif));
             }

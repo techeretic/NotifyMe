@@ -10,6 +10,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import shetye.prathamesh.notifyme.Utilities;
@@ -91,15 +92,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 db.update(MYNOTIF, values, "", null);
             }
         }
-        /*
-         * if (oldVersion < newVersion) { if (newVersion == 2) {
-         * db.execSQL("ALTER TABLE " + MYNOTIF + " ADD COLUMN " + KEY_DATE +
-         * " TEXT"); if (Notif.NoteDateFormat == null) Notif.NoteDateFormat =
-         * new SimpleDateFormat("dd/MM/yyyy hh:mm:ss"); ContentValues values =
-         * new ContentValues(); values.put(KEY_DATE,
-         * Notif.NoteDateFormat.format(new Date())); // updating row
-         * db.update(MYNOTIF, values, "", null); } }
-         */
     }
 
     // Adding new contact
@@ -331,5 +323,63 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         Log.d(LOG_TAG, "noteList,SIZE = " + noteList.size());
         // return contact list
         return noteList;
+    }
+
+    // Getting All Notifications
+    public HashMap<Integer, Notif> getAllNotificationsInHash() {
+        SQLiteDatabase db = this.getReadableDatabase();
+        HashMap<Integer, Notif> notifs = new HashMap<>();
+        String selectQuery = "SELECT  * FROM " + MYNOTIF
+                //+ " WHERE " + KEY_COMPLETE + " = 0"
+                + " ORDER BY " + KEY_DATE + " DESC";
+
+        Cursor cursor = db.rawQuery(selectQuery, null);
+
+        // looping through all rows and adding to list
+        if (cursor.moveToFirst()) {
+            do {
+                Notif note = new Notif(
+                        Integer.parseInt(cursor.getString(0)),
+                        cursor.getString(1),
+                        cursor.getString(2),
+                        Long.parseLong(cursor.getString(3)),
+                        Integer.parseInt(cursor.getString(4)) == 1,
+                        Integer.parseInt(cursor.getString(5)) == 1,
+                        Integer.parseInt(cursor.getString(6)) == 1
+                );
+                note.setDriveID(cursor.getString(7));
+                note.setState(Utilities.states.getState(Integer.parseInt(cursor.getString(8))));
+                // Adding contact to list
+                notifs.put(note.get_id(),note);
+            } while (cursor.moveToNext());
+        }
+
+        // return contact list
+        return notifs;
+    }
+
+    public void handleNote(Notif note, HashMap<Integer, Notif> notifs) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        List<Notif> noteList = new ArrayList<Notif>();
+        String selectQuery = "SELECT  "
+                + KEY_ID
+                + " FROM " + MYNOTIF
+                + " WHERE " + KEY_CONTENT + " = '" + note.getNotification_content() + "' "
+                + " AND " + KEY_TITLE + " = '" + note.getNotification_title() + "'"
+                + " ORDER BY " + KEY_ID + " DESC";
+
+        Cursor cursor = db.rawQuery(selectQuery, null);
+
+        if (cursor.getCount() == 0) {
+            note.set_id(getNewId());
+            note.setState(Utilities.states.SYNCED);
+            addNotif(note);
+            return;
+        }
+        if (cursor.moveToFirst()) {
+            do {
+                notifs.remove(Integer.parseInt(cursor.getString(0)));
+            } while (cursor.moveToNext());
+        }
     }
 }

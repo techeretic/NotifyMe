@@ -66,7 +66,8 @@ public class MyNotifRecAdapter extends
         }
         viewHolder.notifDate.setText(statusText +
                 Utilities.getInstance().getDateFromMS(
-                mNotifs.get(position).getNotification_when()
+                mNotifs.get(position).getNotification_when(),
+                        Utilities.getInstance().getLocale(mContext)
         ));
         viewHolder.item_controller.setMinimumHeight(viewHolder.item_content.getHeight());
         viewHolder.item_content.setTag(R.id.item_content,viewHolder.item_controller);

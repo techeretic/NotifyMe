@@ -1,4 +1,4 @@
-package shetye.prathamesh.notifyme.service;
+package shetye.prathamesh.notifyme.drive;
 
 import android.app.IntentService;
 import android.app.ProgressDialog;
@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
+import android.os.ResultReceiver;
 import android.util.Log;
 
 import com.google.android.gms.common.api.ResultCallback;
@@ -34,6 +35,7 @@ public class DriveSyncService extends IntentService {
     private Context mContext;
     private SharedPreferences mPrefs;
     private DriveId mFolderDriveId;
+    private ResultReceiver mReceiver;
 
     public DriveSyncService() {
         super("DriveSyncService");
@@ -45,6 +47,8 @@ public class DriveSyncService extends IntentService {
         mPrefs = getSharedPreferences(Utilities.SHARED_PREF_APP_DATA, MODE_PRIVATE);
         if (intent != null) {
             final String action = intent.getAction();
+
+            mReceiver = intent.getParcelableExtra(Utilities.NOTIF_SYNC_SERVICE_RECEIVER_KEY);
             if (action.equals(Utilities.SYNC_SERVICE_ACTION)) {
                 Utilities.getInstance().showSyncNotification(mContext);
                 // Perform actual syncing
@@ -68,13 +72,14 @@ public class DriveSyncService extends IntentService {
         public void onResult(DriveApi.MetadataBufferResult result) {
             if (!result.getStatus().isSuccess() || result.getMetadataBuffer().getCount() == 0) {
                 Log.e(LOG_TAG, "Problem while retrieving results | Folder Missing");
+                result.getMetadataBuffer().release();
                 createDefaultFolder();
                 return;
             }
             Log.d(LOG_TAG, "FOLDER PRESENT! Saving DriveID");
             mPrefs.edit().putString(Utilities.SHARED_PREF_DRIVE_FOLDERID_KEY,
                     result.getMetadataBuffer().get(0).getDriveId().encodeToString()).apply();
-            mPrefs.edit().putBoolean(Utilities.SHARED_PREF_DRIVE_CONNECTED_KEY, true).apply();
+            result.getMetadataBuffer().release();
             startSyncTask();
         }
     };
@@ -89,7 +94,6 @@ public class DriveSyncService extends IntentService {
             }
             mPrefs.edit().putString(Utilities.SHARED_PREF_DRIVE_FOLDERID_KEY,
                     result.getDriveFolder().getDriveId().encodeToString()).apply();
-            mPrefs.edit().putBoolean(Utilities.SHARED_PREF_DRIVE_CONNECTED_KEY, true).apply();
             startSyncTask();
         }
     };
@@ -98,7 +102,7 @@ public class DriveSyncService extends IntentService {
         List<Notif> mNotes = DatabaseHelper.getInstance(mContext).getAllNotifications();
         String driveID = mPrefs.getString(Utilities.SHARED_PREF_DRIVE_FOLDERID_KEY,"");
 
-        Log.e(LOG_TAG, "DRIVE ID = " + driveID);
+        Log.d(LOG_TAG, "DRIVE ID = " + driveID);
         if (driveID.isEmpty()) {
             Log.e(LOG_TAG, "Folder doesn't exist");
             return Utilities.FAILURE;
@@ -136,7 +140,10 @@ public class DriveSyncService extends IntentService {
             MetadataChangeSet changeSet = new MetadataChangeSet.Builder()
                     .setTitle(String.valueOf(n.get_id())
                             + "_"
-                            + Utilities.getInstance().getDateFromMS(n.getNotification_when())
+                            + Utilities.getInstance().getDateFromMS(
+                                n.getNotification_when(),
+                                Utilities.getInstance().getLocale(mContext)
+                            )
                             + ".txt")
                     .setMimeType("text/plain")
                     .setStarred(true).build();
@@ -182,6 +189,10 @@ public class DriveSyncService extends IntentService {
         @Override
         protected void onPostExecute(Void result) {
             Utilities.getInstance().dismissSyncNotification(mContext);
+            if (mReceiver != null) {
+                // Sending 0 & null as Receiver is DUMB
+                mReceiver.send(0, null);
+            }
             super.onPostExecute(result);
         }
     }

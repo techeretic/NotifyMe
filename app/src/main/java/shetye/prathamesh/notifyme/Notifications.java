@@ -1,13 +1,14 @@
 package shetye.prathamesh.notifyme;
 
-import android.app.ProgressDialog;
+import android.app.AlertDialog;
 import android.app.SearchManager;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.SharedPreferences;
-import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.util.Pair;
@@ -28,24 +29,15 @@ import android.widget.TextView;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.drive.Drive;
-import com.google.android.gms.drive.DriveApi;
-import com.google.android.gms.drive.DriveContents;
-import com.google.android.gms.drive.DriveFolder;
-import com.google.android.gms.drive.DriveId;
-import com.google.android.gms.drive.MetadataChangeSet;
-import com.google.android.gms.drive.query.Filters;
-import com.google.android.gms.drive.query.Query;
-import com.google.android.gms.drive.query.SearchableField;
 
-import java.io.IOException;
-import java.io.OutputStream;
 import java.util.List;
 
 import shetye.prathamesh.notifyme.database.DatabaseHelper;
 import shetye.prathamesh.notifyme.database.Notif;
-import shetye.prathamesh.notifyme.service.DriveSyncService;
+import shetye.prathamesh.notifyme.drive.DriveAppFolderSyncService;
+import shetye.prathamesh.notifyme.drive.DriveSyncService;
+import shetye.prathamesh.notifyme.drive.SyncResultReceiver;
 import shetye.prathamesh.notifyme.ui.BaseActivity;
 import shetye.prathamesh.notifyme.ui.FloatingActionButton;
 import shetye.prathamesh.notifyme.ui.MyNotifRecAdapter;
@@ -53,8 +45,10 @@ import shetye.prathamesh.notifyme.ui.NotifAnimator;
 import shetye.prathamesh.notifyme.ui.RecyclerItemClickListener;
 
 
-public class Notifications extends BaseActivity implements GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener {
+public class Notifications extends BaseActivity
+        implements GoogleApiClient.ConnectionCallbacks,
+            GoogleApiClient.OnConnectionFailedListener,
+                SyncResultReceiver.Receiver {
     private static final String LOG_TAG = "Notifications";
     private static int REQUEST_CODE_RESOLUTION = 10602966;
     private FloatingActionButton mFAddButton;
@@ -66,11 +60,10 @@ public class Notifications extends BaseActivity implements GoogleApiClient.Conne
     private static boolean sFABClicked;
     private SharedPreferences mPrefs;
     private MenuItem mSearchItem;
-    private boolean mIsDefaultFolderPresent = false;
-    private boolean mIsConnected = false;
-
     private static View sView;
     private static int sPosition;
+    public SyncResultReceiver mReceiver;
+    private static boolean isSync;
 
     private void resetView(int position, View view) {
         if (position != sPosition && sView != null) {
@@ -112,6 +105,8 @@ public class Notifications extends BaseActivity implements GoogleApiClient.Conne
         sDoUpdate = true;
         mPrefs = getSharedPreferences(Utilities.SHARED_PREF_APP_DATA, MODE_PRIVATE);
         updateVersion();
+        mReceiver = new SyncResultReceiver(new Handler());
+        mReceiver.setReceiver(this);
 
         mNotifications = DatabaseHelper.getInstance(mContext).getAllNotifications();
 
@@ -228,7 +223,7 @@ public class Notifications extends BaseActivity implements GoogleApiClient.Conne
     protected void onResume() {
         super.onResume();
         if (mPrefs.getBoolean(Utilities.SHARED_PREF_SEARCH_KEY, false)) {
-            mPrefs.edit().putBoolean(Utilities.SHARED_PREF_SEARCH_KEY,false).commit();
+            mPrefs.edit().putBoolean(Utilities.SHARED_PREF_SEARCH_KEY,false).apply();
             if (mSearchItem != null) {
                 mSearchItem.collapseActionView();
             }
@@ -262,9 +257,7 @@ public class Notifications extends BaseActivity implements GoogleApiClient.Conne
     @Override
     protected void onPause() {
         super.onPause();
-        if (Utilities.mGoogleApiClient != null) {
-            Utilities.mGoogleApiClient.disconnect();
-        }
+        disconnectDrive();
         resetView(-1, null);
         sView = null;
         sPosition = -1;
@@ -286,7 +279,7 @@ public class Notifications extends BaseActivity implements GoogleApiClient.Conne
             version = "1";
         }
         if (mPrefs.getString(Utilities.SHARED_PREF_KEY,"1").equals(version)) {
-            mPrefs.edit().putString(Utilities.SHARED_PREF_KEY, version).commit();
+            mPrefs.edit().putString(Utilities.SHARED_PREF_KEY, version).apply();
             Utilities.getInstance().reArmAlarms(mContext);
         }
     }
@@ -334,8 +327,21 @@ public class Notifications extends BaseActivity implements GoogleApiClient.Conne
             case R.id.info:
                 Utilities.getInstance().showLegalNotice(mContext);
                 return true;
+            case R.id.sync:
+                if (mPrefs.getBoolean(Utilities.SHARED_PREF_DRIVE_CONNECTED_KEY, false)) {
+                    startGoogleDriveSetup();
+                } else {
+                    showSyncRequestDialog();
+                }
+                isSync = true;
+                return true;
             case R.id.drive:
-                startGoogleDriveSetup();
+                if (mPrefs.getBoolean(Utilities.SHARED_PREF_DRIVE_CONNECTED_KEY, false)) {
+                    startGoogleDriveSetup();
+                } else {
+                    showSyncRequestDialog();
+                }
+                isSync = false;
                 return true;
         }
         return super.onOptionsItemSelected(item);
@@ -364,28 +370,27 @@ public class Notifications extends BaseActivity implements GoogleApiClient.Conne
 
     @Override
     public void onConnected(Bundle bundle) {
-        mIsConnected = true;
-        Intent i = new Intent(mContext, DriveSyncService.class);
-        i.setAction(Utilities.SYNC_SERVICE_ACTION);
+        mPrefs.edit().putBoolean(Utilities.SHARED_PREF_DRIVE_CONNECTED_KEY, true).apply();
+        Intent i;
+        if (isSync) {
+            i = new Intent(mContext, DriveAppFolderSyncService.class);
+            i.setAction(Utilities.APPDATA_SYNC_SERVICE_ACTION);
+        } else {
+            i = new Intent(mContext, DriveSyncService.class);
+            i.setAction(Utilities.SYNC_SERVICE_ACTION);
+        }
+        i.putExtra(Utilities.NOTIF_SYNC_SERVICE_RECEIVER_KEY, mReceiver);
         startService(i);
     }
 
     @Override
     public void onConnectionFailed(ConnectionResult result) {
-
-        mIsConnected = false;
-        // Called whenever the API client fails to connect.
         Log.i(LOG_TAG, "GoogleApiClient connection failed: " + result.toString());
         if (!result.hasResolution()) {
-            // show the localized error dialog.
             Log.i(LOG_TAG, "NO RESOLUTION!! FML!");
             GooglePlayServicesUtil.getErrorDialog(result.getErrorCode(), this, 0).show();
             return;
         }
-        // The failure has a resolution. Resolve it.
-        // Called typically when the app is not yet authorized, and an
-        // authorization
-        // dialog is displayed to the user.
         try {
             Log.i(LOG_TAG, "NO RESOLUTION!! FML!");
             result.startResolutionForResult(this, REQUEST_CODE_RESOLUTION);
@@ -396,12 +401,38 @@ public class Notifications extends BaseActivity implements GoogleApiClient.Conne
 
     @Override
     public void onConnectionSuspended(int i) {
-        mIsConnected = false;
         Log.d(LOG_TAG, "GoogleApiClient connection suspended");
     }
 
-    private GoogleApiClient getGoogleApiClient() {
-        return Utilities.mGoogleApiClient;
+    private void disconnectDrive() {
+        if (Utilities.mGoogleApiClient != null) {
+            Utilities.mGoogleApiClient.disconnect();
+        }
+    }
+
+    public void showSyncRequestDialog() {
+        new AlertDialog.Builder(mContext)
+                .setTitle(getString(R.string.drive_sync_title))
+                .setMessage(getString(R.string.drive_sync_message))
+                .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                })
+                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        startGoogleDriveSetup();
+                        dialog.dismiss();
+                    }
+                })
+                .setIcon(R.drawable.draw_cloud)
+                .show();
+    }
+
+    @Override
+    public void onReceiveSyncResult(int resultCode, Bundle resultData) {
+        Log.d(LOG_TAG, "Received Sync Result - Disconnecting from Drive");
+        disconnectDrive();
     }
 
 }
