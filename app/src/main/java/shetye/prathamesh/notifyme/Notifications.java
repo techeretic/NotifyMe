@@ -358,9 +358,12 @@ public class Notifications extends BaseActivity
 
     private void startGoogleDriveSetup() {
         if (Utilities.mGoogleApiClient == null) {
+            Log.d(LOG_TAG, "startGoogleDriveSetup -> SCOPE_APPFOLDER");
+            Log.d(LOG_TAG, "startGoogleDriveSetup -> SCOPE_FILE");
             Utilities.mGoogleApiClient = new GoogleApiClient.Builder(mContext)
                     .addApi(Drive.API)
                     .addScope(Drive.SCOPE_FILE)
+                    .addScope(Drive.SCOPE_APPFOLDER)
                     .addConnectionCallbacks(this)
                     .addOnConnectionFailedListener(this)
                     .build();

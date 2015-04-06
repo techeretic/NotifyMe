@@ -58,28 +58,15 @@ public class DriveAppFolderSyncService extends IntentService {
     }
 
     private void startAppDataSync() {
-        Drive.DriveApi.newDriveContents(Utilities.mGoogleApiClient)
-                .setResultCallback(driveContentsCallback);
+        mFolder = Drive.DriveApi.getAppFolder(Utilities.mGoogleApiClient);
+        if (mFolder != null) {
+            mFolder.listChildren(Utilities.mGoogleApiClient)
+                    .setResultCallback(metadataResult);
+        } else {
+            Log.d(LOG_TAG, "mFolder is NULL!!!");
+            sendResult();
+        }
     }
-
-    final private ResultCallback<DriveApi.DriveContentsResult> driveContentsCallback =
-            new ResultCallback<DriveApi.DriveContentsResult>() {
-                @Override
-                public void onResult(DriveApi.DriveContentsResult result) {
-                    if (!result.getStatus().isSuccess()) {
-                        Log.e(LOG_TAG, "Error while trying to create new file contents");
-                        return;
-                    }
-
-                    mFolder = Drive.DriveApi.getAppFolder(Utilities.mGoogleApiClient);
-                    if (mFolder != null) {
-                        mFolder.listChildren(Utilities.mGoogleApiClient)
-                                .setResultCallback(metadataResult);
-                    } else {
-                        Log.d(LOG_TAG, "mFolder is NULL!!!");
-                    }
-                }
-            };
 
     final private ResultCallback<DriveApi.MetadataBufferResult> metadataResult = new
             ResultCallback<DriveApi.MetadataBufferResult>() {
@@ -91,7 +78,6 @@ public class DriveAppFolderSyncService extends IntentService {
                         return;
                     }
                     mAppDataBuffer = result.getMetadataBuffer();
-                    result.getMetadataBuffer().release();
                     new SyncTask().execute();
                 }
             };
@@ -110,11 +96,8 @@ public class DriveAppFolderSyncService extends IntentService {
 
         @Override
         protected void onPostExecute(Void aVoid) {
-            Utilities.getInstance().dismissSyncNotification(mContext);
-            if (mReceiver != null) {
-                // Sending 0 & null as Receiver is DUMB
-                mReceiver.send(0, null);
-            }
+            //Utilities.getInstance().dismissSyncNotification(mContext);
+            sendResult();
             super.onPostExecute(aVoid);
         }
     }
@@ -140,9 +123,12 @@ public class DriveAppFolderSyncService extends IntentService {
         } catch (IOException e) {
             Log.e(LOG_TAG, "IOException while reading from the stream", e);
         }
+        Log.d(LOG_TAG, "contents = " + contents);
         Notif existingNote = Notif.fromJSONString(contents);
 
-        DatabaseHelper.getInstance(mContext).handleNote(existingNote, mNotifs);
+        if (existingNote != null) {
+            DatabaseHelper.getInstance(mContext).handleNote(existingNote, mNotifs);
+        }
     }
 
     private void syncNotifs(Notif n) {
@@ -186,4 +172,10 @@ public class DriveAppFolderSyncService extends IntentService {
         n.updateThisInDB(mContext);
     }
 
+    private void sendResult() {
+        if (mReceiver != null) {
+            // Sending 0 & null as Receiver is DUMB
+            mReceiver.send(0, null);
+        }
+    }
 }
