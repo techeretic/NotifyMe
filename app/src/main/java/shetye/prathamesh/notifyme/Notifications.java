@@ -287,6 +287,17 @@ public class Notifications extends BaseActivity
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_base, menu);
+        //Check Sync options
+        if (getSharedPreferences(Utilities.SHARED_PREF_APP_DATA, MODE_MULTI_PROCESS)
+                .getBoolean(Utilities.SHARED_PREF_DRIVE_SYNC_KEY, false)) {
+            Log.d(LOG_TAG, "CHECKING FOR SHARED_PREF_DRIVE_SYNC_KEY -> TRUE");
+            MenuItem item = menu.findItem(R.id.sync);
+            item.setVisible(false);
+        } else {
+            Log.d(LOG_TAG, "CHECKING FOR SHARED_PREF_DRIVE_SYNC_KEY -> FALSE");
+            MenuItem item = menu.findItem(R.id.force_sync);
+            item.setVisible(false);
+        }
         // Associate searchable configuration with the SearchView
         mSearchItem = menu.findItem(R.id.search);
         if (mSearchItem != null) {
@@ -323,6 +334,7 @@ public class Notifications extends BaseActivity
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        resetView(-1, null);
         switch (item.getItemId()) {
             case R.id.info:
                 Utilities.getInstance().showLegalNotice(mContext);
@@ -342,6 +354,14 @@ public class Notifications extends BaseActivity
                     showSyncRequestDialog();
                 }
                 isSync = false;
+                return true;
+            case R.id.force_sync:
+                if (mPrefs.getBoolean(Utilities.SHARED_PREF_DRIVE_CONNECTED_KEY, false)) {
+                    startGoogleDriveSetup();
+                } else {
+                    showSyncRequestDialog();
+                }
+                isSync = true;
                 return true;
         }
         return super.onOptionsItemSelected(item);
@@ -373,6 +393,7 @@ public class Notifications extends BaseActivity
 
     @Override
     public void onConnected(Bundle bundle) {
+        Utilities.getInstance().showProgressDialog(mContext, getString(R.string.drive_sync_progress));
         mPrefs.edit().putBoolean(Utilities.SHARED_PREF_DRIVE_CONNECTED_KEY, true).apply();
         Intent i;
         if (isSync) {
@@ -428,13 +449,16 @@ public class Notifications extends BaseActivity
                         dialog.dismiss();
                     }
                 })
-                .setIcon(R.drawable.draw_cloud)
+                .setIcon(R.drawable.ic_cloud)
+                .setCancelable(false)
                 .show();
     }
 
     @Override
     public void onReceiveSyncResult(int resultCode, Bundle resultData) {
         Log.d(LOG_TAG, "Received Sync Result - Disconnecting from Drive");
+        Utilities.getInstance().dismissProgressDialog();
+        refreshNotifications();
         disconnectDrive();
     }
 

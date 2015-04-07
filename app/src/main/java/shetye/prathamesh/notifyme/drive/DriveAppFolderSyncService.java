@@ -88,6 +88,7 @@ public class DriveAppFolderSyncService extends IntentService {
             for (int i = 0; i < mAppDataBuffer.getCount(); i++) {
                 processServerNotif(mAppDataBuffer.get(i).getDriveId());
             }
+            mAppDataBuffer.release();
             for(Map.Entry<Integer, Notif> n : mNotifs.entrySet()) {
                 syncNotifs(n.getValue());
             }
@@ -175,6 +176,8 @@ public class DriveAppFolderSyncService extends IntentService {
     private void sendResult() {
         if (mReceiver != null) {
             // Sending 0 & null as Receiver is DUMB
+            getSharedPreferences(Utilities.SHARED_PREF_APP_DATA, MODE_MULTI_PROCESS)
+                    .edit().putBoolean(Utilities.SHARED_PREF_DRIVE_SYNC_KEY,true);
             mReceiver.send(0, null);
         }
     }

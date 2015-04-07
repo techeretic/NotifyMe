@@ -9,6 +9,7 @@ import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.app.ProgressDialog;
 import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -58,18 +59,23 @@ public class Utilities {
     public static final String NOTIF_SYNC_SERVICE_RECEIVER_KEY = "shetye.prathamesh.DRIVE_SYNC_RECEIVER";
     public static final String SYNC_SERVICE_ACTION = "shetye.prathamesh.START_SYNC";
     public static final String APPDATA_SYNC_SERVICE_ACTION = "shetye.prathamesh.START_APPDATA_SYNC";
+    public static final String ADDTO_APPDATA_SERVICE_ACTION = "shetye.prathamesh.ADDTO_APPDATA_SYNC";
 
     public static final String SHARED_PREF_APP_DATA = "APP_DATA";
     public static final String SHARED_PREF_KEY = "VERSION";
     public static final String SHARED_PREF_SEARCH_KEY = "SEARCH_STAT";
     public static final String SHARED_PREF_DRIVE_CONNECTED_KEY = "DRIVE_CONNECTED_KEY";
     public static final String SHARED_PREF_DRIVE_FOLDERID_KEY = "DRIVE_FOLDERID_KEY";
+    public static final String SHARED_PREF_DRIVE_SYNC_KEY = "DRIVE_SYNCDONE_KEY";
+
     public static final String DRIVE_DEFAULT_FOLDER_NAME = "App_Notifications";
+
     public static final int SYNC_NOTIF_ID = 142857;
     public static final int UPDATED = 7;
     public static final int SUCCESS = 1;
     public static final int FAILURE = 0;
     private static Utilities instance;
+    private ProgressDialog mProgressDialog;
     private Dialog mDialog;
     private Button mTimeBtn;
     private Button mDateBtn;
@@ -480,4 +486,17 @@ public class Utilities {
         notificationManager.notify(SYNC_NOTIF_ID, mBuilder.build());
     }
 
+    public void showProgressDialog(Context context, String message) {
+        mProgressDialog = new ProgressDialog(context);
+        mProgressDialog.setCancelable(false);
+        mProgressDialog.setMessage(message);
+        mProgressDialog.show();
+    }
+
+    public void dismissProgressDialog() {
+        if (mProgressDialog!=null) {
+            mProgressDialog.dismiss();
+            mProgressDialog = null;
+        }
+    }
 }

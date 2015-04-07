@@ -36,6 +36,8 @@
     <string name="will_notify">Will Notify at </string>
     <string name="notified">Notified at </string>
     <string name="sync_notification">Syncing with Google Drive</string>
-    <string name="drive_sync_message">Notifications will now ask for your Google Drive access. \n\n This will allow the app to back up your saved Notifications to your Google Drive as well as give you the ability to save your notifications to Google Drive, to any folder of your choice.\n\nDo you want to continue?</string>
+    <string name="drive_sync_message">Notifications will now ask for your Google Drive access. \n\nThis will allow the app to back up your saved Notifications to your Google Drive as well as give you the ability to save your notifications to Google Drive, to any folder of your choice.\n\nDo you want to continue?</string>
     <string name="drive_sync_title">Google Drive Sync</string>
+    <string name="drive_sync_progress">Syncing with Google Drive</string>
+    <string name="force_sync">Force Drive Sync</string>
 </resources>
