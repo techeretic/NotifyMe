@@ -60,6 +60,8 @@ public class Notifications extends BaseActivity
     private static boolean sFABClicked;
     private SharedPreferences mPrefs;
     private MenuItem mSearchItem;
+    private MenuItem mSyncItem;
+    private MenuItem mForceSyncItem;
     private static View sView;
     private static int sPosition;
     public SyncResultReceiver mReceiver;
@@ -103,7 +105,7 @@ public class Notifications extends BaseActivity
         super.onCreate(savedInstanceState);
         mContext = this;
         sDoUpdate = true;
-        mPrefs = getSharedPreferences(Utilities.SHARED_PREF_APP_DATA, MODE_PRIVATE);
+        mPrefs = getSharedPreferences(Utilities.SHARED_PREF_APP_DATA, MODE_MULTI_PROCESS);
         updateVersion();
         mReceiver = new SyncResultReceiver(new Handler());
         mReceiver.setReceiver(this);
@@ -264,6 +266,7 @@ public class Notifications extends BaseActivity
     }
 
     public void refreshNotifications() {
+        removeMenuIcon();
         mNotifications = DatabaseHelper.getInstance(mContext).getAllNotifications();
         MyNotifRecAdapter mAdapter = new MyNotifRecAdapter(mContext, mNotifications);
         mRecyclerView.setAdapter(mAdapter);
@@ -284,20 +287,27 @@ public class Notifications extends BaseActivity
         }
     }
 
+    private void removeMenuIcon() {
+        if (mSyncItem == null || mForceSyncItem == null) {
+            return;
+        }
+        if (mPrefs.getBoolean(Utilities.SHARED_PREF_DRIVE_SYNC_KEY, false)) {
+            Log.d(LOG_TAG, "CHECKING FOR SHARED_PREF_DRIVE_SYNC_KEY -> TRUE");
+            mSyncItem.setVisible(false);
+            mForceSyncItem.setVisible(true);
+        } else {
+            Log.d(LOG_TAG, "CHECKING FOR SHARED_PREF_DRIVE_SYNC_KEY -> FALSE");
+            mSyncItem.setVisible(true);
+            mForceSyncItem.setVisible(false);
+        }
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_base, menu);
         //Check Sync options
-        if (getSharedPreferences(Utilities.SHARED_PREF_APP_DATA, MODE_MULTI_PROCESS)
-                .getBoolean(Utilities.SHARED_PREF_DRIVE_SYNC_KEY, false)) {
-            Log.d(LOG_TAG, "CHECKING FOR SHARED_PREF_DRIVE_SYNC_KEY -> TRUE");
-            MenuItem item = menu.findItem(R.id.sync);
-            item.setVisible(false);
-        } else {
-            Log.d(LOG_TAG, "CHECKING FOR SHARED_PREF_DRIVE_SYNC_KEY -> FALSE");
-            MenuItem item = menu.findItem(R.id.force_sync);
-            item.setVisible(false);
-        }
+        mSyncItem = menu.findItem(R.id.sync);
+        mForceSyncItem = menu.findItem(R.id.force_sync);
         // Associate searchable configuration with the SearchView
         mSearchItem = menu.findItem(R.id.search);
         if (mSearchItem != null) {
@@ -329,6 +339,7 @@ public class Notifications extends BaseActivity
             Log.d(LOG_TAG, "searchView is null");
         }
 
+        removeMenuIcon();
         return super.onCreateOptionsMenu(menu);
     }
 
@@ -377,6 +388,7 @@ public class Notifications extends BaseActivity
     }
 
     private void startGoogleDriveSetup() {
+        Utilities.getInstance().showProgressDialog(mContext, getString(R.string.drive_sync_progress));
         if (Utilities.mGoogleApiClient == null) {
             Log.d(LOG_TAG, "startGoogleDriveSetup -> SCOPE_APPFOLDER");
             Log.d(LOG_TAG, "startGoogleDriveSetup -> SCOPE_FILE");
@@ -393,7 +405,6 @@ public class Notifications extends BaseActivity
 
     @Override
     public void onConnected(Bundle bundle) {
-        Utilities.getInstance().showProgressDialog(mContext, getString(R.string.drive_sync_progress));
         mPrefs.edit().putBoolean(Utilities.SHARED_PREF_DRIVE_CONNECTED_KEY, true).apply();
         Intent i;
         if (isSync) {
@@ -457,6 +468,7 @@ public class Notifications extends BaseActivity
     @Override
     public void onReceiveSyncResult(int resultCode, Bundle resultData) {
         Log.d(LOG_TAG, "Received Sync Result - Disconnecting from Drive");
+        mPrefs.edit().putBoolean(Utilities.SHARED_PREF_DRIVE_SYNC_KEY, true).apply();
         Utilities.getInstance().dismissProgressDialog();
         refreshNotifications();
         disconnectDrive();

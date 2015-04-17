@@ -44,7 +44,7 @@ public class DriveSyncService extends IntentService {
     @Override
     protected void onHandleIntent(Intent intent) {
         mContext = this;
-        mPrefs = getSharedPreferences(Utilities.SHARED_PREF_APP_DATA, MODE_PRIVATE);
+        mPrefs = getSharedPreferences(Utilities.SHARED_PREF_APP_DATA, MODE_MULTI_PROCESS);
         if (intent != null) {
             final String action = intent.getAction();
 

@@ -5,7 +5,7 @@ android {
         config {
             keyAlias 'techeretic'
             keyPassword 'austin316'
-            storeFile file('/home/prathamesh/Downloads/Prathamesh-Dev.store')
+            storeFile file('/home/p.shetye/Downloads/Prathamesh-Dev.store')
             storePassword 'austin316'
         }
     }
@@ -15,8 +15,8 @@ android {
         applicationId "shetye.prathamesh.notifyme"
         minSdkVersion 21
         targetSdkVersion 22
-        versionCode 9
-        versionName "0.0.9"
+        versionCode 10
+        versionName "0.1.0"
     }
     buildTypes {
         release {
