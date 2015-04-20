@@ -282,6 +282,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     //Searching notes based on note content
     public List<Notif> searchNotes(String query) {
+        String q = query.replaceAll("'", "''");
         SQLiteDatabase db = this.getReadableDatabase();
         List<Notif> noteList = new ArrayList<Notif>();
         String selectQuery = "SELECT  "
@@ -295,8 +296,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + KEY_DRIVEID + ","
                 + KEY_STATUS
                 + " FROM " + MYNOTIF
-                + " WHERE UPPER(" + KEY_CONTENT + ") LIKE UPPER('%" + query + "%') "
-                + " OR UPPER(" + KEY_TITLE + ") LIKE UPPER('%" + query + "%') "
+                + " WHERE UPPER(" + KEY_CONTENT + ") LIKE UPPER('%" + q + "%') "
+                + " OR UPPER(" + KEY_TITLE + ") LIKE UPPER('%" + q + "%') "
                 + "ORDER BY " + KEY_DATE + " DESC";
 
         Cursor cursor = db.rawQuery(selectQuery, null);
@@ -360,12 +361,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     public void handleNote(Notif note, HashMap<Integer, Notif> notifs) {
         SQLiteDatabase db = this.getReadableDatabase();
+        String title = note.getNotification_title().replaceAll("'","''");
+        String content = note.getNotification_content().replaceAll("'","''");
         List<Notif> noteList = new ArrayList<Notif>();
         String selectQuery = "SELECT  "
                 + KEY_ID
                 + " FROM " + MYNOTIF
-                + " WHERE " + KEY_CONTENT + " = '" + note.getNotification_content() + "' "
-                + " AND " + KEY_TITLE + " = '" + note.getNotification_title() + "'"
+                + " WHERE " + KEY_CONTENT + " = '" + content + "' "
+                + " AND " + KEY_TITLE + " = '" + title + "'"
                 + " ORDER BY " + KEY_ID + " DESC";
 
         Cursor cursor = db.rawQuery(selectQuery, null);
